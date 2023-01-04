@@ -1,0 +1,132 @@
+---
+title: "3xTg-AD-serial-reversal"
+execute:
+  echo: false
+  warning: false
+format:
+    pdf:
+        include-in-header: 
+            text: |
+                \usepackage{fancyhdr}
+        include-before-body:
+            text: |
+                \pagestyle{fancy}
+                \fancyhead[L]{Serial Reversal in 3xTg-AD Mice}
+                \fancyhead[R]{\today}
+                \fancyfoot[C]{\thepage}
+---
+
+```{r}
+#### Load libraries ----------------------------------------------------
+library(here)
+library(janitor)
+library(tidyverse)
+library(MuMIn); options(na.action = "na.fail")
+library(lme4)
+
+#### Read and wrangle data ---------------------------------------------
+
+# Genotypes data
+
+geno <- read_csv(here("data", "geno clean.csv"),
+                 col_types = "cffDDdd") %>% 
+    mutate(sex = case_when(
+            sex == "f" ~ "Female",
+            sex == "m" ~ "Male"),
+        sex = as.factor(sex),
+        geno = case_when(
+            geno == "tg" ~ "3xTg-AD",
+            geno == "wt" ~ "B6129"),
+        geno = as.factor(geno)) %>% 
+    clean_names()
+
+# Manual data
+
+manual_files <- list.files(here("data", "csvs"),
+                           pattern = "\\.csv",
+                           full.names = TRUE)
+
+manual_data <- manual_files %>% 
+    map_dfr(read_csv,
+            col_types = "cccdddddl") %>% 
+    clean_names() %>% 
+    filter(!exclude) %>% 
+    mutate(rev = rev == "yes",
+           retest = str_to_lower(op) == "retest") %>% 
+    rename(animal = mouse) %>% 
+    select(-exclude)
+
+# Auto data
+
+auto_files <- list.files(here("data", "auto"),
+                         pattern = "\\.csv",
+                         full.names = TRUE)
+
+auto_data <- auto_files %>% 
+    map_dfr(read_csv,
+            col_types = "ccddccdddddccdddddccldlld",
+            comment = "#") %>% 
+    clean_names() %>% 
+    mutate(animal = case_when(
+            animal == "1297" ~ "1927",
+            TRUE ~ animal),
+           op = str_extract(study_name,
+                            "[:digit:]+"),
+           rev = str_detect(study_name,
+                            "REV"),
+           retest = str_detect(study_name,
+                               "RETEST")) %>% 
+    group_by(animal, date, study_name, block, op, rev, retest) %>% 
+    summarise(hit = sum(correct[trial_type == "P"], na.rm = TRUE),
+              p_trials = sum(trial_type[!ss] == "P"),
+              cr = sum(correct[trial_type == "N"], na.rm = TRUE),
+              n_trials = sum(trial_type[!ss] == "N")) %>% 
+    ungroup() %>% 
+    select(-date, -study_name)
+
+# Combine manual and auto data, summarize and add genotypes
+
+dat <- bind_rows(manual_data, auto_data) %>% 
+    group_by(animal, op, rev, retest) %>% 
+    summarise(across(hit:n_trials,
+                     ~ sum(.x))) %>% 
+    mutate(errors = (p_trials + n_trials) - (hit + cr),
+           op = case_when(
+               op == "retest" ~ 99,
+               TRUE ~ as.numeric(op)
+           ),
+           rev = as.factor(rev),
+           retest = as.factor(retest)) %>% 
+    left_join(geno,
+              by = c("animal" = "mouse")) %>% 
+    ungroup()
+
+```
+
+
+```{r}
+#### Tests -------------------------------------------------------
+
+# Discrimination
+disc_dat <- dat %>% 
+    filter(retest == FALSE, 
+           rev == FALSE)
+
+disc_fm <- lmer(errors ~ op * sex * geno + (1|animal),
+            data = disc_dat,
+           REML = FALSE)
+
+dredge(disc_fm)
+
+# Reversal
+rev_dat <- dat %>% 
+    filter(retest == FALSE, 
+           rev == TRUE)
+
+rev_fm <- lmer(errors ~ op * sex * geno + (1|animal),
+            data = rev_dat,
+           REML = FALSE)
+
+dredge(rev_fm)
+```
+
