@@ -8,6 +8,7 @@ format:
         include-in-header: 
             text: |
                 \usepackage{fancyhdr}
+                \setmainfont{Times New Roman}
         include-before-body:
             text: |
                 \pagestyle{fancy}
@@ -20,6 +21,7 @@ format:
 #### Load libraries ----------------------------------------------------
 library(here)
 library(janitor)
+library(rstatix)
 library(tidyverse)
 library(MuMIn)
     options(na.action = "na.fail")
@@ -27,6 +29,8 @@ library(lme4)
 library(knitr)
     options(knitr.kable.NA = '')
 library(kableExtra)
+    
+source(here("code", "format_p_values.R"))
 
 #### Read and wrangle data ---------------------------------------------
 
@@ -124,6 +128,9 @@ dat <- dat %>%
 # Subjects
 
 ```{r}
+#| label: tbl-subjects
+#| tbl-cap: "Demographics of mice tested."
+
 #### Demographics ---------------------------------------------
 geno %>% 
     filter(!(mouse %in% incomplete_mice)) %>% 
@@ -132,17 +139,26 @@ geno %>%
               min_age = min(days),
               max_age = max(days),
               n = length(days)) %>% 
-    kable(format = "latex",
-          col.names = c("Genotype", "Sex", "Mean age (days)",
+    kbl(format = "latex",
+        col.names = c("Genotype", "Sex", "Mean age (days)",
                         "Minimum age (days)", "Maximum age (days)", "N"),
-          caption = "Demographics of mice tested.",
-          digits = 2)
+        digits = 2,
+        booktabs = TRUE,
+        linesep = "")
+
+t_test_age <- geno %>% 
+    filter(!(mouse %in% incomplete_mice)) %>%
+    ungroup() %>% 
+    t_test(days ~ geno)
 
 ```
+
+There are `r dat %>% pull(animal) %>% unique() %>% length()` mice included in this study. There was no significant difference in age between the 3xTg-AD and B6129 mice (*t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`; @tbl-subjects).
 
 # Discrimination
 
 ```{r}
+#| label: fig-disc
 #| fig-cap: "Errors (±95% CI) made by the mice at on each odour pair during the discrimination stages."
 
 disc_dat <- dat %>% 
@@ -166,6 +182,9 @@ disc_dat %>%
 ```
 
 ```{r}
+#| label: tbl-disc-models
+#| tbl-cap: "AICc model table for discrimination."
+
 #### Tests -------------------------------------------------------
 
 # Discrimination
@@ -178,15 +197,30 @@ disc_model_table <- dredge(disc_fm,
        fixed = "op")
 
 disc_model_table %>% 
-    kable(caption = "AICc model table for discrimination.",
-          digits = 2,
-          row.names = FALSE) %>% 
+    kable(digits = 2,
+          row.names = FALSE,
+          booktabs = TRUE,
+          linesep = "") %>% 
     kable_styling(latex_options = c("scale_down"))
 ```
+
+```{r}
+disc_best_model <- get.models(disc_model_table,
+                              subset = delta == 0)[[1]]
+
+disc_null_model <- lmer(errors ~ op + (1|animal),
+                        data = disc_dat,
+                        REML = FALSE)
+
+disc_aov <- anova(disc_best_model, disc_null_model) %>% tidy()
+```
+
+The errors made decreased as the mice advanced through the odour pairs (@fig-disc). The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-disc-models), this model did not differ from the null model of just an effect of odour pair ($\chi$^2^~`r format(disc_aov$df[2], digits = 2)`~ = `r format(disc_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_aov$p.value[2])`).
 
 # Reversal
 
 ```{r}
+#| label: fig-rev
 #| fig-cap: "Errors (±95% CI) made by the mice at on each odour pair during the reversal stages."
 
 rev_dat <- dat %>% 
@@ -210,6 +244,9 @@ rev_dat %>%
 
 
 ```{r}
+#| label: tbl-rev-models
+#| tbl-cap: "AICc model table for reversal."
+
 # Reversal
 rev_fm <- lmer(errors ~ op * sex * geno + (1|animal),
                data = rev_dat,
@@ -219,8 +256,22 @@ rev_model_table <- dredge(rev_fm,
        fixed = "op")
 
 rev_model_table %>% 
-    kable(caption = "AICc model table for reversal.",
-          digits = 2,
-          row.names = FALSE) %>% 
+    kable(digits = 2,
+          row.names = FALSE,
+          booktabs = TRUE,
+          linesep = "") %>% 
     kable_styling(latex_options = c("scale_down"))
 ```
+
+```{r}
+rev_best_model <- get.models(rev_model_table,
+                             subset = delta == 0)[[1]]
+
+rev_null_model <- lmer(errors ~ op + (1|animal),
+                       data = rev_dat,
+                       REML = FALSE)
+
+rev_aov <- anova(rev_best_model, rev_null_model) %>% tidy()
+```
+
+The errors made decreased as the mice advanced through the odour pairs (@fig-rev). The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-rev-models), this model differed significantly from the null model of just an effect of odour pair ($\chi$^2^~`r format(rev_aov$df[2], digits = 2)`~ = `r format(rev_aov$statistic[2], digits = 2)`, *p* `r format.p(rev_aov$p.value[2])`).
