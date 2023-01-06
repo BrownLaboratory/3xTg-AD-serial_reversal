@@ -1,5 +1,5 @@
 ---
-title: "3xTg-AD-serial-reversal"
+# title: "3xTg-AD-serial-reversal"
 execute:
   echo: false
   warning: false
@@ -21,8 +21,12 @@ format:
 library(here)
 library(janitor)
 library(tidyverse)
-library(MuMIn); options(na.action = "na.fail")
+library(MuMIn)
+    options(na.action = "na.fail")
 library(lme4)
+library(knitr)
+    options(knitr.kable.NA = '')
+library(kableExtra)
 
 #### Read and wrangle data ---------------------------------------------
 
@@ -92,8 +96,7 @@ dat <- bind_rows(manual_data, auto_data) %>%
                      ~ sum(.x))) %>% 
     mutate(errors = (p_trials + n_trials) - (hit + cr),
            op = case_when(
-               op == "retest" ~ 99,
-               TRUE ~ as.numeric(op)
+               op %in% 0:18 ~ as.numeric(op)
            ),
            rev = as.factor(rev),
            retest = as.factor(retest)) %>% 
@@ -103,30 +106,121 @@ dat <- bind_rows(manual_data, auto_data) %>%
 
 ```
 
+```{r}
+#### Check for incomplete data ------------------------------------
+incomplete_mice <- dat %>% 
+    group_by(animal, rev, retest) %>% 
+    summarise(max_op = max(op),
+              min_op = min(op)) %>% 
+    filter(max_op != 18, retest == FALSE) %>% 
+    pull(animal) %>% 
+    unique()
+
+# Drop mice with incomplete data
+dat <- dat %>% 
+    filter(!(animal %in% incomplete_mice))
+```
+
+# Subjects
+
+```{r}
+#### Demographics ---------------------------------------------
+geno %>% 
+    filter(!(mouse %in% incomplete_mice)) %>% 
+    group_by(geno, sex) %>% 
+    summarise(mean_age = mean(days),
+              min_age = min(days),
+              max_age = max(days),
+              n = length(days)) %>% 
+    kable(format = "latex",
+          col.names = c("Genotype", "Sex", "Mean age (days)",
+                        "Minimum age (days)", "Maximum age (days)", "N"),
+          caption = "Demographics of mice tested.",
+          digits = 2)
+
+```
+
+# Discrimination
+
+```{r}
+#| fig-cap: "Errors (±95% CI) made by the mice at on each odour pair during the discrimination stages."
+
+disc_dat <- dat %>% 
+    filter(retest == FALSE, 
+           rev == FALSE)
+
+disc_dat %>% 
+    ggplot(aes(x = op,
+               y = errors,
+               colour = geno)) +
+    geom_point(alpha = .2,
+               shape = 20) + 
+    stat_summary(fun.data = "mean_cl_boot") +
+    geom_smooth(se = FALSE) +
+    theme_classic() +
+    theme(legend.title = element_blank(),
+          legend.position = c(.9, .9)) +
+    labs(x = "Odour pair",
+         y = "Errors")
+    
+```
 
 ```{r}
 #### Tests -------------------------------------------------------
 
 # Discrimination
-disc_dat <- dat %>% 
-    filter(retest == FALSE, 
-           rev == FALSE)
 
 disc_fm <- lmer(errors ~ op * sex * geno + (1|animal),
-            data = disc_dat,
-           REML = FALSE)
+                data = disc_dat,
+                REML = FALSE)
 
-dredge(disc_fm)
+disc_model_table <- dredge(disc_fm,
+       fixed = "op")
+
+disc_model_table %>% 
+    kable(caption = "AICc model table for discrimination.",
+          digits = 2,
+          row.names = FALSE) %>% 
+    kable_styling(latex_options = c("scale_down"))
+```
 
 # Reversal
+
+```{r}
+#| fig-cap: "Errors (±95% CI) made by the mice at on each odour pair during the reversal stages."
+
 rev_dat <- dat %>% 
     filter(retest == FALSE, 
            rev == TRUE)
 
-rev_fm <- lmer(errors ~ op * sex * geno + (1|animal),
-            data = rev_dat,
-           REML = FALSE)
-
-dredge(rev_fm)
+rev_dat %>% 
+    ggplot(aes(x = op,
+               y = errors,
+               colour = geno)) +
+    geom_point(alpha = .2,
+               shape = 20) + 
+    stat_summary(fun.data = "mean_cl_boot") +
+    geom_smooth(se = FALSE) +
+    theme_classic() +
+    theme(legend.title = element_blank(),
+          legend.position = c(.9, .9)) +
+    labs(x = "Odour pair",
+         y = "Errors")
 ```
 
+
+```{r}
+# Reversal
+rev_fm <- lmer(errors ~ op * sex * geno + (1|animal),
+               data = rev_dat,
+               REML = FALSE)
+
+rev_model_table <- dredge(rev_fm,
+       fixed = "op")
+
+rev_model_table %>% 
+    kable(caption = "AICc model table for reversal.",
+          digits = 2,
+          row.names = FALSE) %>% 
+    kable_styling(latex_options = c("scale_down"))
+```
