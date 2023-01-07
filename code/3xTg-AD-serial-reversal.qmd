@@ -275,3 +275,66 @@ rev_aov <- anova(rev_best_model, rev_null_model) %>% tidy()
 ```
 
 The errors made decreased as the mice advanced through the odour pairs (@fig-rev). The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-rev-models), this model differed significantly from the null model of just an effect of odour pair ($\chi$^2^~`r format(rev_aov$df[2], digits = 2)`~ = `r format(rev_aov$statistic[2], digits = 2)`, *p* `r format.p(rev_aov$p.value[2])`).
+
+# Total errors
+
+```{r}
+#| label: tbl-total-errors-models
+#| tbl-cap: "AICc model table for total errors."
+#### Total errors ---------------------------------------------------
+
+total_errors_dat <- dat %>% 
+    filter(retest == FALSE) %>% 
+    group_by(animal, sex, geno) %>% 
+    summarise(total_errors = sum(errors))
+
+total_errors_fm <- lm(total_errors ~ geno * sex,
+                      data = total_errors_dat)
+
+total_errors_model_table <- dredge(total_errors_fm)
+
+total_errors_best_model <- get.models(total_errors_model_table,
+                                      delta == 0)[[1]]
+
+total_errors_null_model <- lm(total_errors ~ 1,
+                              data = total_errors_dat)
+
+total_errors_aov <- anova(total_errors_null_model,
+                          total_errors_best_model) %>% 
+    tidy()
+
+total_errors_model_table %>% 
+    kable(digits = 2,
+          row.names = FALSE,
+          booktabs = TRUE,
+          linesep = "") %>% 
+    kable_styling(latex_options = c("scale_down"))
+
+```
+
+The model with just an effect of genotype best explained the data (@tbl-total-errors-models), this model differed significantly from the null model (*F*~`r format(total_errors_aov$df[2], digits = 2)`~ = `r format(total_errors_aov$statistic[2], digits = 2)`, *p* `r format.p(total_errors_aov$p.value[2])`; (@fig-total-errors)).
+
+```{r}
+#| label: fig-total-errors
+#| fig-cap: "Total errors made, excluding retest."
+
+total_errors_dat %>% 
+    ggplot(aes(x = geno,
+               y = total_errors)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_dotplot(binaxis = "y", 
+               stackdir = "center",
+               fill = NA) +
+    theme_classic() +
+    labs(y = "Total errors",
+         x = "Genotype")
+
+```
+
+# Retest
+
+```{r}
+#### Retest ---------------------------------------------------------
+
+```
+
