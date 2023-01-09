@@ -120,9 +120,10 @@ incomplete_mice <- dat %>%
     pull(animal) %>% 
     unique()
 
-# Drop mice with incomplete data
+# Drop mice with incomplete data and male mice
 dat <- dat %>% 
-    filter(!(animal %in% incomplete_mice))
+    filter(!(animal %in% incomplete_mice),
+           sex == "Female")
 ```
 
 # Subjects
@@ -147,13 +148,16 @@ geno %>%
         linesep = "")
 
 t_test_age <- geno %>% 
-    filter(!(mouse %in% incomplete_mice)) %>%
+    filter(!(mouse %in% incomplete_mice),
+           sex == "Female") %>%
     ungroup() %>% 
     t_test(days ~ geno)
 
 ```
 
-There are `r dat %>% pull(animal) %>% unique() %>% length()` mice included in this study. There was no significant difference in age between the 3xTg-AD and B6129 mice (*t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`; @tbl-subjects).
+Due to the small number of male mice, only females are included in this analysis.
+There are `r dat %>% pull(animal) %>% unique() %>% length()` female mice included in this study. 
+There was no significant difference in age between the 3xTg-AD and B6129 mice (*t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`; @tbl-subjects).
 
 # Discrimination
 
@@ -189,17 +193,16 @@ disc_dat %>%
 
 # Discrimination
 
-disc_fm <- lmer(errors ~ op * sex * geno + (1|animal),
+disc_fm <- lmer(errors ~ op * geno + (1|animal),
                 data = disc_dat,
                 REML = FALSE)
 
-disc_model_table <- dredge(disc_fm,
-       fixed = "op")
+disc_model_table <- dredge(disc_fm)
 
 disc_best_model <- get.models(disc_model_table,
                               subset = delta == 0)[[1]]
 
-disc_null_model <- lmer(errors ~ op + (1|animal),
+disc_null_model <- lmer(errors ~ (1|animal),
                         data = disc_dat,
                         REML = FALSE)
 
@@ -213,11 +216,14 @@ disc_model_table %>%
     kable(digits = 2,
           row.names = FALSE,
           booktabs = TRUE,
-          linesep = "") %>% 
-    kable_styling(latex_options = c("scale_down"))
+          linesep = "")
+    # kable_styling(latex_options = c("scale_down"))
 ```
 
-The errors made decreased as the mice advanced through the odour pairs (@fig-disc). The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-disc-models), this model did not differ from the null model of just an effect of odour pair ($\chi$^2^~`r format(disc_aov$df[2], digits = 2)`~ = `r format(disc_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_aov$p.value[2])`).
+The discrimination trials were assessed with linear mixed effects models on the number of errors made on each odour pair. 
+The errors made decreased as the mice advanced through the odour pairs (@fig-disc). 
+The  model with just an effect of odour pair best explained the data (@tbl-disc-models), 
+this model differed from the null model ($\chi$^2^~`r format(disc_aov$df[2], digits = 2)`~ = `r format(disc_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_aov$p.value[2])`).
 
 # Reversal
 
@@ -250,17 +256,16 @@ rev_dat %>%
 #| tbl-cap: "AICc model table for reversal."
 
 # Reversal
-rev_fm <- lmer(errors ~ op * sex * geno + (1|animal),
+rev_fm <- lmer(errors ~ op * geno + (1|animal),
                data = rev_dat,
                REML = FALSE)
 
-rev_model_table <- dredge(rev_fm,
-       fixed = "op")
+rev_model_table <- dredge(rev_fm)
 
 rev_best_model <- get.models(rev_model_table,
                              subset = delta == 0)[[1]]
 
-rev_null_model <- lmer(errors ~ op + (1|animal),
+rev_null_model <- lmer(errors ~ (1|animal),
                        data = rev_dat,
                        REML = FALSE)
 
@@ -274,12 +279,14 @@ rev_model_table %>%
     kable(digits = 2,
           row.names = FALSE,
           booktabs = TRUE,
-          linesep = "") %>% 
-    kable_styling(latex_options = c("scale_down"))
+          linesep = "") 
+    # kable_styling(latex_options = c("scale_down"))
 ```
 
-
-The errors made decreased as the mice advanced through the odour pairs (@fig-rev). The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-rev-models), this model differed significantly from the null model of just an effect of odour pair ($\chi$^2^~`r format(rev_aov$df[2], digits = 2)`~ = `r format(rev_aov$statistic[2], digits = 2)`, *p* `r format.p(rev_aov$p.value[2])`).
+The reversal trials were assessed with linear mixed effects models on the number of errors made on each odour pair. 
+The errors made decreased as the mice advanced through the odour pairs (@fig-rev). 
+The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-rev-models), 
+this model differed significantly from the null model of just an effect of odour pair ($\chi$^2^~`r format(rev_aov$df[2], digits = 2)`~ = `r format(rev_aov$statistic[2], digits = 2)`, *p* `r format.p(rev_aov$p.value[2])`).
 
 # Total errors
 
@@ -290,10 +297,10 @@ The errors made decreased as the mice advanced through the odour pairs (@fig-rev
 
 total_errors_dat <- dat %>% 
     filter(retest == FALSE) %>% 
-    group_by(animal, sex, geno) %>% 
+    group_by(animal, geno) %>% 
     summarise(total_errors = sum(errors))
 
-total_errors_fm <- lm(total_errors ~ geno * sex,
+total_errors_fm <- lm(total_errors ~ geno,
                       data = total_errors_dat)
 
 total_errors_model_table <- dredge(total_errors_fm)
@@ -316,12 +323,13 @@ total_errors_model_table %>%
     kable(digits = 2,
           row.names = FALSE,
           booktabs = TRUE,
-          linesep = "") %>% 
-    kable_styling(latex_options = c("scale_down"))
+          linesep = "")
 
 ```
 
-The model with just an effect of genotype best explained the data (@tbl-total-errors-models), this model differed significantly from the null model (*F*~`r format(total_errors_aov$df[2], digits = 2)`~ = `r format(total_errors_aov$statistic[2], digits = 2)`, *p* `r format.p(total_errors_aov$p.value[2])`; (@fig-total-errors)).
+The total errors made were assessed with linear models. 
+The model with an effect of genotype best explained the data (@tbl-total-errors-models), 
+this model differed significantly from the null model (*F*~`r format(total_errors_aov$df[2], digits = 2)`~ = `r format(total_errors_aov$statistic[2], digits = 2)`, *p* `r format.p(total_errors_aov$p.value[2])`; (@fig-total-errors)).
 
 ```{r}
 #| label: fig-total-errors
@@ -343,7 +351,46 @@ total_errors_dat %>%
 # Retest
 
 ```{r}
+#| label: tbl-retest-errors-models
+#| tbl-cap: "AICc model table for retest errors."
 #### Retest ---------------------------------------------------------
+retest_dat <- dat %>% 
+    filter(retest == TRUE)
+
+retest_mf <- lm(errors ~ geno,
+                data = retest_dat)
+
+retest_model_table <- dredge(retest_mf)
+
+attr(retest_model_table$weight, 'model.weights') <- NULL
+
+retest_model_table %>% 
+    mutate(weight = round(weight, 2)) %>% 
+    select(-`(Intercept)`) %>% 
+    kable(digits = 2,
+          row.names = FALSE,
+          booktabs = TRUE,
+          linesep = "")
 
 ```
 
+The number of errors made during the retest was assessed with linear maodels. 
+The null model best explained the data for the number of errors made during the retest (@tbl-retest-errors-models), 
+indicating no significant effects of genotype nor sex (@fig-retest-errors).
+
+```{r}
+#| label: fig-retest-errors
+#| fig-cap: "Total errors made during retest."
+
+retest_dat %>% 
+    ggplot(aes(x = geno,
+               y = errors)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_dotplot(binaxis = "y", 
+               stackdir = "center",
+               fill = NA) +
+    theme_classic() +
+    labs(y = "Errors",
+         x = "Genotype")
+
+```
