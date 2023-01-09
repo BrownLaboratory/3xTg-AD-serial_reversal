@@ -196,15 +196,6 @@ disc_fm <- lmer(errors ~ op * sex * geno + (1|animal),
 disc_model_table <- dredge(disc_fm,
        fixed = "op")
 
-disc_model_table %>% 
-    kable(digits = 2,
-          row.names = FALSE,
-          booktabs = TRUE,
-          linesep = "") %>% 
-    kable_styling(latex_options = c("scale_down"))
-```
-
-```{r}
 disc_best_model <- get.models(disc_model_table,
                               subset = delta == 0)[[1]]
 
@@ -213,6 +204,17 @@ disc_null_model <- lmer(errors ~ op + (1|animal),
                         REML = FALSE)
 
 disc_aov <- anova(disc_best_model, disc_null_model) %>% tidy()
+
+attr(disc_model_table$weight, 'model.weights') <- NULL
+
+disc_model_table %>% 
+    mutate(weight = round(weight, 2)) %>% 
+    select(-`(Intercept)`) %>% 
+    kable(digits = 2,
+          row.names = FALSE,
+          booktabs = TRUE,
+          linesep = "") %>% 
+    kable_styling(latex_options = c("scale_down"))
 ```
 
 The errors made decreased as the mice advanced through the odour pairs (@fig-disc). The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-disc-models), this model did not differ from the null model of just an effect of odour pair ($\chi$^2^~`r format(disc_aov$df[2], digits = 2)`~ = `r format(disc_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_aov$p.value[2])`).
@@ -255,15 +257,6 @@ rev_fm <- lmer(errors ~ op * sex * geno + (1|animal),
 rev_model_table <- dredge(rev_fm,
        fixed = "op")
 
-rev_model_table %>% 
-    kable(digits = 2,
-          row.names = FALSE,
-          booktabs = TRUE,
-          linesep = "") %>% 
-    kable_styling(latex_options = c("scale_down"))
-```
-
-```{r}
 rev_best_model <- get.models(rev_model_table,
                              subset = delta == 0)[[1]]
 
@@ -272,7 +265,19 @@ rev_null_model <- lmer(errors ~ op + (1|animal),
                        REML = FALSE)
 
 rev_aov <- anova(rev_best_model, rev_null_model) %>% tidy()
+
+attr(rev_model_table$weight, 'model.weights') <- NULL
+
+rev_model_table %>% 
+    mutate(weight = round(weight, 2)) %>% 
+    select(-`(Intercept)`) %>% 
+    kable(digits = 2,
+          row.names = FALSE,
+          booktabs = TRUE,
+          linesep = "") %>% 
+    kable_styling(latex_options = c("scale_down"))
 ```
+
 
 The errors made decreased as the mice advanced through the odour pairs (@fig-rev). The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-rev-models), this model differed significantly from the null model of just an effect of odour pair ($\chi$^2^~`r format(rev_aov$df[2], digits = 2)`~ = `r format(rev_aov$statistic[2], digits = 2)`, *p* `r format.p(rev_aov$p.value[2])`).
 
@@ -303,7 +308,11 @@ total_errors_aov <- anova(total_errors_null_model,
                           total_errors_best_model) %>% 
     tidy()
 
+attr(total_errors_model_table$weight, 'model.weights') <- NULL
+
 total_errors_model_table %>% 
+    mutate(weight = round(weight, 2)) %>% 
+    select(-`(Intercept)`) %>% 
     kable(digits = 2,
           row.names = FALSE,
           booktabs = TRUE,
