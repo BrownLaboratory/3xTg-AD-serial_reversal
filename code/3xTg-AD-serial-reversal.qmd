@@ -225,6 +225,34 @@ The errors made decreased as the mice advanced through the odour pairs (@fig-dis
 The  model with just an effect of odour pair best explained the data (@tbl-disc-models), 
 this model differed from the null model ($\chi$^2^~`r format(disc_aov$df[2], digits = 2)`~ = `r format(disc_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_aov$p.value[2])`).
 
+## Near errorless learning
+
+```{r}
+disc_1_error <- disc_dat %>% 
+    filter(errors == 1)
+
+disc_0_error <- disc_dat %>% 
+    filter(errors == 0)
+
+disc_error <- disc_dat %>% 
+    filter(errors <= 1)
+
+disc_errorless_table <- disc_error %>% 
+    pull(animal) %>% 
+    table()
+
+disc_best_mouse <- disc_errorless_table %>% 
+    which.max() %>% 
+    attr("names")
+
+disc_best_geno <- geno$geno[geno$mouse == disc_best_mouse]
+
+```
+
+There were `r disc_1_error %>% nrow()` instances of mice making a single error on the initial discrimination of the odour pair, and `r disc_0_error %>% nrow()` instance of a mouse making zero errors. 
+With `r disc_errorless_table %>% length()` mice passing at least one discrimination with just one or zero errors.
+One mouse, a `r disc_best_geno`, had one or fewer errors on the initial discrimination of `r disc_errorless_table %>% max()` odour pairs.
+
 # Reversal
 
 ```{r}
@@ -287,6 +315,34 @@ The reversal trials were assessed with linear mixed effects models on the number
 The errors made decreased as the mice advanced through the odour pairs (@fig-rev). 
 The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-rev-models), 
 this model differed significantly from the null model of just an effect of odour pair ($\chi$^2^~`r format(rev_aov$df[2], digits = 2)`~ = `r format(rev_aov$statistic[2], digits = 2)`, *p* `r format.p(rev_aov$p.value[2])`).
+
+## Near errorless learning
+
+```{r}
+rev_1_error <- rev_dat %>% 
+    filter(errors == 1)
+
+rev_0_error <- rev_dat %>% 
+    filter(errors == 0)
+
+rev_error <- rev_dat %>% 
+    filter(errors <= 1)
+
+rev_errorless_table <- rev_error %>% 
+    pull(animal) %>% 
+    table()
+
+rev_best_mouse <- rev_errorless_table %>% 
+    which.max() %>% 
+    attr("names")
+
+rev_best_geno <- geno$geno[geno$mouse == rev_best_mouse]
+
+```
+
+There were `r rev_1_error %>% nrow()` instances of mice making a single error on the reversal of the odour pair, and `r rev_0_error %>% nrow()` instances of a mouse making zero errors. 
+With `r rev_errorless_table %>% length()` mice passing at least one reversal with just one or zero errors.
+One mouse, the same `r rev_best_geno` mentioned in the discrimination, had one or fewer errors on the reversal of `r rev_errorless_table %>% max()` odour pairs.
 
 # Total errors
 
