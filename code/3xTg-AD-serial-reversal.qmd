@@ -228,6 +228,9 @@ this model differed from the null model ($\chi$^2^~`r format(disc_aov$df[2], dig
 ## Near errorless learning
 
 ```{r}
+#| label: tbl-disc-errorless-models
+#| tbl-cap: "AICc model table for near errorless learning during discrimination."
+
 disc_1_error <- disc_dat %>% 
     filter(errors == 1)
 
@@ -247,11 +250,44 @@ disc_best_mouse <- disc_errorless_table %>%
 
 disc_best_geno <- geno$geno[geno$mouse == disc_best_mouse]
 
+disc_errorless_dat <- disc_dat %>% 
+    mutate(errorless = errors <= 1)
+
+disc_errorless_mf <- glmer(errorless ~ geno + (1|animal),
+                           data = disc_errorless_dat,
+                           family = "binomial")
+
+disc_errorless_model_table <- dredge(disc_errorless_mf)
+
+disc_errorless_best_model <- get.models(disc_errorless_model_table,
+                                        subset = delta == 0)[[1]]
+
+disc_errorless_null_model <- glmer(errorless ~ 1 + (1|animal),
+                                   data = disc_errorless_dat,
+                                   family = "binomial")
+
+disc_errorless_aov <- anova(disc_errorless_best_model, 
+                            disc_errorless_null_model) %>% 
+    tidy()
+
+attr(disc_errorless_model_table$weight, 'model.weights') <- NULL
+
+disc_errorless_model_table %>% 
+    mutate(weight = round(weight, 2)) %>% 
+    select(-`(Intercept)`) %>% 
+    kable(digits = 2,
+          row.names = FALSE,
+          booktabs = TRUE,
+          linesep = "")
+
 ```
 
 There were `r disc_1_error %>% nrow()` instances of mice making a single error on the initial discrimination of the odour pair, and `r disc_0_error %>% nrow()` instance of a mouse making zero errors. 
 With `r disc_errorless_table %>% length()` mice passing at least one discrimination with just one or zero errors.
 One mouse, a `r disc_best_geno`, had one or fewer errors on the initial discrimination of `r disc_errorless_table %>% max()` odour pairs.
+
+Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair. 
+The model with an effect of genotype best explained the data (@tbl-disc-errorless-models), but did not differ from the null model ($\chi$^2^~`r format(disc_errorless_aov$df[2], digits = 2)`~ = `r format(disc_errorless_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_errorless_aov$p.value[2])`).
 
 # Reversal
 
@@ -319,6 +355,9 @@ this model differed significantly from the null model of just an effect of odour
 ## Near errorless learning
 
 ```{r}
+#| label: tbl-rev-errorless-models
+#| tbl-cap: "AICc model table for near errorless learning during reversal"
+
 rev_1_error <- rev_dat %>% 
     filter(errors == 1)
 
@@ -338,11 +377,44 @@ rev_best_mouse <- rev_errorless_table %>%
 
 rev_best_geno <- geno$geno[geno$mouse == rev_best_mouse]
 
+rev_errorless_dat <- rev_dat %>% 
+    mutate(errorless = errors <= 1)
+
+rev_errorless_mf <- glmer(errorless ~ geno + (1|animal),
+                           data = rev_errorless_dat,
+                           family = "binomial")
+
+rev_errorless_model_table <- dredge(rev_errorless_mf)
+
+rev_errorless_best_model <- get.models(rev_errorless_model_table,
+                                        subset = delta == 0)[[1]]
+
+rev_errorless_null_model <- glmer(errorless ~ 1 + (1|animal),
+                                   data = rev_errorless_dat,
+                                   family = "binomial")
+
+rev_errorless_aov <- anova(rev_errorless_best_model, 
+                            rev_errorless_null_model) %>% 
+    tidy()
+
+attr(rev_errorless_model_table$weight, 'model.weights') <- NULL
+
+rev_errorless_model_table %>% 
+    mutate(weight = round(weight, 2)) %>% 
+    select(-`(Intercept)`) %>% 
+    kable(digits = 2,
+          row.names = FALSE,
+          booktabs = TRUE,
+          linesep = "")
+
 ```
 
 There were `r rev_1_error %>% nrow()` instances of mice making a single error on the reversal of the odour pair, and `r rev_0_error %>% nrow()` instances of a mouse making zero errors. 
 With `r rev_errorless_table %>% length()` mice passing at least one reversal with just one or zero errors.
 One mouse, the same `r rev_best_geno` mentioned in the discrimination, had one or fewer errors on the reversal of `r rev_errorless_table %>% max()` odour pairs.
+
+Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair. 
+The null model best explained the data (@tbl-rev-errorless-models).
 
 # Total errors
 
