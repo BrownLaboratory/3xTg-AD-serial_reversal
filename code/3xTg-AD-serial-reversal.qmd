@@ -1,5 +1,22 @@
 ---
-# title: "3xTg-AD-serial-reversal"
+title: "Serial Reversal in 3xTg-AD Mice"
+author:
+  - name: Kyle M Roddick
+    affiliations:
+      - ref: dal
+  - name: Heather M Schellinck
+    affiliations:
+      - ref: dal
+  - name: Richard E Brown
+    affiliations:
+      - ref: dal
+    attributes:
+      corresponding: true
+affiliations:
+  - id: dal
+    name: Dalhousie University
+    deparment: Psychology and Neuroscience, 
+
 execute:
   echo: false
   warning: false
@@ -8,13 +25,18 @@ format:
         include-in-header: 
             text: |
                 \usepackage{fancyhdr}
+                \usepackage[margin=1in]{geometry}
                 \setmainfont{Times New Roman}
+                
         include-before-body:
             text: |
                 \pagestyle{fancy}
                 \fancyhead[L]{Serial Reversal in 3xTg-AD Mice}
                 \fancyhead[R]{\today}
                 \fancyfoot[C]{\thepage}
+        toc: false
+template-partials:
+  - title.tex
 ---
 
 ```{r}
@@ -331,8 +353,8 @@ disc_dat %>%
 ```
 
 Pearson correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
-The correlations were not significant for either the B6129 (*r* = `r format(disc_corr_test$cor[2], digits = 2)`, *p* = `r format.p(disc_corr_test$p[2])`), 
-nor the 3xTg-AD (*r* = `r format(disc_corr_test$cor[1], digits = 2)`, *p* = `r format.p(disc_corr_test$p[1])`) mice.
+The correlations were not significant for either the B6129 (*r* = `r format(disc_corr_test$cor[2], digits = 2)`, *p* `r format.p(disc_corr_test$p[2])`), 
+nor the 3xTg-AD (*r* = `r format(disc_corr_test$cor[1], digits = 2)`, *p* `r format.p(disc_corr_test$p[1])`) mice.
 {{< pagebreak >}}
 # Reversal
 
@@ -502,7 +524,7 @@ rev_dat %>%
 ```
 
 Pearson correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
-The correlations were not significant for either the B6129 (*r* = `r format(rev_corr_test$cor[2], digits = 2)`, *p* = `r format.p(rev_corr_test$p[2])`), 
+The correlations were not significant for either the B6129 (*r* = `r format(rev_corr_test$cor[2], digits = 2)`, *p* `r format.p(rev_corr_test$p[2])`), 
 nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* `r format.p(rev_corr_test$p[1])`) mice.
 {{< pagebreak >}}
 # Total errors
@@ -589,7 +611,7 @@ total_errors_dat %>%
 ```
 
 Pearson correlations were used to compare the total number of errors made to the age of the mice for each genotype (@fig-total-errors-corr). 
-The correlations were not significant for either the B6129 (*r* = `r format(total_errors_corr_test$cor[2], digits = 2)`, *p* = `r format.p(total_errors_corr_test$p[2])`), 
+The correlations were not significant for either the B6129 (*r* = `r format(total_errors_corr_test$cor[2], digits = 2)`, *p* `r format.p(total_errors_corr_test$p[2])`), 
 nor the 3xTg-AD (*r* = `r format(total_errors_corr_test$cor[1], digits = 2)`, *p* `r format.p(total_errors_corr_test$p[1])`) mice.
 {{< pagebreak >}}
 # Retest
@@ -672,5 +694,5 @@ retest_dat %>%
 ```
 
 Pearson correlations were used to compare the number of errors made on the retest to the age of the mice for each genotype (@fig-retest-corr). 
-The correlations were not significant for either the B6129 (*r* = `r format(retest_corr_test$cor[2], digits = 2)`, *p* = `r format.p(retest_corr_test$p[2])`), 
-nor the 3xTg-AD (*r* = `r format(retest_corr_test$cor[1], digits = 2)`, *p* = `r format.p(retest_corr_test$p[1])`) mice.
+The correlations were not significant for either the B6129 (*r* = `r format(retest_corr_test$cor[2], digits = 2)`, *p* `r format.p(retest_corr_test$p[2])`), 
+nor the 3xTg-AD (*r* = `r format(retest_corr_test$cor[1], digits = 2)`, *p* `r format.p(retest_corr_test$p[1])`) mice.
