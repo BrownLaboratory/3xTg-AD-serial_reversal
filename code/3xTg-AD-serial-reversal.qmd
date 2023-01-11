@@ -289,6 +289,34 @@ One mouse, a `r disc_best_geno`, had one or fewer errors on the initial discrimi
 Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair. 
 The model with an effect of genotype best explained the data (@tbl-disc-errorless-models), but did not differ from the null model ($\chi$^2^~`r format(disc_errorless_aov$df[2], digits = 2)`~ = `r format(disc_errorless_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_errorless_aov$p.value[2])`).
 
+## Age effects
+
+```{r}
+#| label: fig-disc-corr
+#| fig-cap: "Correlation between age and errors made on odour pair one discrimination."
+
+disc_corr_test <- disc_dat %>% 
+    filter(op == 1) %>% 
+    group_by(geno) %>% 
+    cor_test(errors, days)
+
+disc_dat %>% 
+    filter(op == 1) %>% 
+    ggplot(aes(x = days,
+               y = errors,
+               colour = geno)) +
+    geom_point() +
+    geom_smooth(method = "lm") + 
+    theme_classic() +
+    theme(legend.title = element_blank()) +
+    labs(x = "Age (days)",
+         y = "Errors")
+```
+
+Pearson correlations were used to compare the number of errors mad on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
+The correlations were not significant for either the B6129 (*r* = `r format(disc_corr_test$cor[2], digits = 2)`, *p* = `r format.p(disc_corr_test$p[2])`), 
+nor the 3xTg-AD (*r* = `r format(disc_corr_test$cor[1], digits = 2)`, *p* = `r format.p(disc_corr_test$p[1])`) mice.
+
 # Reversal
 
 ```{r}
@@ -415,6 +443,34 @@ One mouse, the same `r rev_best_geno` mentioned in the discrimination, had one o
 
 Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair. 
 The null model best explained the data (@tbl-rev-errorless-models).
+
+## Age effects
+
+```{r}
+#| label: fig-rev-corr
+#| fig-cap: "Correlation between age and errors made on odour pair one reversal."
+
+rev_corr_test <- rev_dat %>% 
+    filter(op == 1) %>% 
+    group_by(geno) %>% 
+    cor_test(errors, days)
+
+rev_dat %>% 
+    filter(op == 1) %>%
+    ggplot(aes(x = days,
+               y = errors,
+               colour = geno)) +
+    geom_point() +
+    geom_smooth(method = "lm") + 
+    theme_classic() +
+    theme(legend.title = element_blank()) +
+    labs(x = "Age (days)",
+         y = "Errors")
+```
+
+Pearson correlations were used to compare the number of errors mad on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
+The correlations were not significant for either the B6129 (*r* = `r format(rev_corr_test$cor[2], digits = 2)`, *p* = `r format.p(rev_corr_test$p[2])`), 
+nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* = `r format.p(rev_corr_test$p[1])`) mice.
 
 # Total errors
 
