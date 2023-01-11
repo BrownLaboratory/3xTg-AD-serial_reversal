@@ -282,9 +282,26 @@ disc_errorless_model_table %>%
 
 ```
 
+```{r}
+disc_second_half <- disc_dat %>% 
+    filter(op >= 10) %>% 
+    group_by(geno) %>% 
+    summarise(errors_mean = mean(errors),
+              errors_sd = sd(errors))
+
+disc_second_half_t_test <- disc_dat %>%
+    filter(op >= 10) %>%
+    ungroup() %>%
+    t_test(errors ~ geno)
+```
+
 There were `r disc_1_error %>% nrow()` instances of mice making a single error on the initial discrimination of the odour pair, and `r disc_0_error %>% nrow()` instance of a mouse making zero errors. 
 With `r disc_errorless_table %>% length()` mice passing at least one discrimination with just one or zero errors.
 One mouse, a `r disc_best_geno`, had one or fewer errors on the initial discrimination of `r disc_errorless_table %>% max()` odour pairs.
+
+During the second half of the experiment, odour pairs 10 through 18, the B6129 made an average of `r format(disc_second_half$errors_mean[2], digits = 2)` ± `r format(disc_second_half$errors_sd[2], digits = 2)` errors, 
+while the 3xTg-AD mice made `r format(disc_second_half$errors_mean[1], digits = 2)` ± `r format(disc_second_half$errors_sd[1], digits = 2)` errors.
+This difference was not significant (*t*~`r format(disc_second_half_t_test$df, digits = 2)`~ = `r format(disc_second_half_t_test$statistic, digits = 2)`, *p* `r format.p(disc_second_half_t_test$p)`).
 
 Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair. 
 The model with an effect of genotype best explained the data (@tbl-disc-errorless-models), but did not differ from the null model ($\chi$^2^~`r format(disc_errorless_aov$df[2], digits = 2)`~ = `r format(disc_errorless_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_errorless_aov$p.value[2])`).
@@ -437,9 +454,25 @@ rev_errorless_model_table %>%
 
 ```
 
+```{r}
+rev_second_half <- rev_dat %>% 
+    filter(op >= 10) %>% 
+    group_by(geno) %>% 
+    summarise(errors_mean = mean(errors),
+              errors_sd = sd(errors))
+
+rev_second_half_t_test <- rev_dat %>%
+    filter(op >= 10) %>%
+    ungroup() %>%
+    t_test(errors ~ geno)
+```
+
 There were `r rev_1_error %>% nrow()` instances of mice making a single error on the reversal of the odour pair, and `r rev_0_error %>% nrow()` instances of a mouse making zero errors. 
 With `r rev_errorless_table %>% length()` mice passing at least one reversal with just one or zero errors.
 One mouse, the same `r rev_best_geno` mentioned in the discrimination, had one or fewer errors on the reversal of `r rev_errorless_table %>% max()` odour pairs.
+
+During the second half of the experiment, odour pairs 10 through 18, the B6129 made an average of `r format(rev_second_half$errors_mean[2], digits = 2)` ± `r format(rev_second_half$errors_sd[2], digits = 2)` errors, 
+while the 3xTg-AD mice made `r format(rev_second_half$errors_mean[1], digits = 2)` ± `r format(rev_second_half$errors_sd[1], digits = 2)` errors, a significant difference (*t*~`r format(rev_second_half_t_test$df, digits = 2)`~ = `r format(rev_second_half_t_test$statistic, digits = 2)`, *p* `r format.p(rev_second_half_t_test$p)`).
 
 Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair. 
 The null model best explained the data (@tbl-rev-errorless-models).
