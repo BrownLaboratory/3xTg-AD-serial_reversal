@@ -313,10 +313,10 @@ disc_dat %>%
          y = "Errors")
 ```
 
-Pearson correlations were used to compare the number of errors mad on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
+Pearson correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
 The correlations were not significant for either the B6129 (*r* = `r format(disc_corr_test$cor[2], digits = 2)`, *p* = `r format.p(disc_corr_test$p[2])`), 
 nor the 3xTg-AD (*r* = `r format(disc_corr_test$cor[1], digits = 2)`, *p* = `r format.p(disc_corr_test$p[1])`) mice.
-
+{{< pagebreak >}}
 # Reversal
 
 ```{r}
@@ -468,10 +468,10 @@ rev_dat %>%
          y = "Errors")
 ```
 
-Pearson correlations were used to compare the number of errors mad on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
+Pearson correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
 The correlations were not significant for either the B6129 (*r* = `r format(rev_corr_test$cor[2], digits = 2)`, *p* = `r format.p(rev_corr_test$p[2])`), 
-nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* = `r format.p(rev_corr_test$p[1])`) mice.
-
+nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* `r format.p(rev_corr_test$p[1])`) mice.
+{{< pagebreak >}}
 # Total errors
 
 ```{r}
@@ -481,7 +481,7 @@ nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* = `r fo
 
 total_errors_dat <- dat %>% 
     filter(retest == FALSE) %>% 
-    group_by(animal, geno) %>% 
+    group_by(animal, geno, days) %>% 
     summarise(total_errors = sum(errors))
 
 total_errors_fm <- lm(total_errors ~ geno,
@@ -513,7 +513,7 @@ total_errors_model_table %>%
 
 The total errors made were assessed with linear models. 
 The model with an effect of genotype best explained the data (@tbl-total-errors-models), 
-this model differed significantly from the null model (*F*~`r format(total_errors_aov$df[2], digits = 2)`~ = `r format(total_errors_aov$statistic[2], digits = 2)`, *p* `r format.p(total_errors_aov$p.value[2])`; (@fig-total-errors)).
+this model differed significantly from the null model (*F*~`r format(total_errors_aov$df[2], digits = 2)`~ = `r format(total_errors_aov$statistic[2], digits = 2)`, *p* `r format.p(total_errors_aov$p.value[2])`; @fig-total-errors).
 
 ```{r}
 #| label: fig-total-errors
@@ -532,14 +532,50 @@ total_errors_dat %>%
 
 ```
 
+## Age effects
+
+```{r}
+#| label: fig-total-errors-corr
+#| fig-cap: "Correlation between age and total errors made."
+
+total_errors_corr_test <- total_errors_dat %>% 
+    group_by(geno) %>% 
+    cor_test(total_errors, days)
+
+total_errors_dat %>% 
+    ggplot(aes(x = days,
+               y = total_errors,
+               colour = geno)) +
+    geom_point() +
+    geom_smooth(method = "lm") + 
+    theme_classic() +
+    theme(legend.title = element_blank()) +
+    labs(x = "Age (days)",
+         y = "Total errors")
+
+```
+
+Pearson correlations were used to compare the total number of errors made to the age of the mice for each genotype (@fig-total-errors-corr). 
+The correlations were not significant for either the B6129 (*r* = `r format(total_errors_corr_test$cor[2], digits = 2)`, *p* = `r format.p(total_errors_corr_test$p[2])`), 
+nor the 3xTg-AD (*r* = `r format(total_errors_corr_test$cor[1], digits = 2)`, *p* `r format.p(total_errors_corr_test$p[1])`) mice.
+{{< pagebreak >}}
 # Retest
+
+```{r}
+retest_dat <- dat %>% 
+    filter(retest == TRUE)
+
+retest_table <- retest_dat %>% 
+    group_by(geno) %>% 
+    count()
+```
+
+Due to mice dying, only `r retest_table$n[2]` `r retest_table$geno[2]` and `r retest_table$n[1]` `r retest_table$geno[1]` mice were given the retest.
 
 ```{r}
 #| label: tbl-retest-errors-models
 #| tbl-cap: "AICc model table for retest errors."
 #### Retest ---------------------------------------------------------
-retest_dat <- dat %>% 
-    filter(retest == TRUE)
 
 retest_mf <- lm(errors ~ geno,
                 data = retest_dat)
@@ -578,3 +614,30 @@ retest_dat %>%
          x = "Genotype")
 
 ```
+
+## Age effects
+
+```{r}
+#| label: fig-retest-corr
+#| fig-cap: "Correlation between age and errors made on the retest."
+
+retest_corr_test <- retest_dat %>% 
+    group_by(geno) %>% 
+    cor_test(errors, days)
+
+retest_dat %>% 
+    ggplot(aes(x = days,
+               y = errors,
+               colour = geno)) +
+    geom_point() +
+    geom_smooth(method = "lm") + 
+    theme_classic() +
+    theme(legend.title = element_blank()) +
+    labs(x = "Age (days)",
+         y = "Total errors")
+
+```
+
+Pearson correlations were used to compare the number of errors made on the retest to the age of the mice for each genotype (@fig-retest-corr). 
+The correlations were not significant for either the B6129 (*r* = `r format(retest_corr_test$cor[2], digits = 2)`, *p* = `r format.p(retest_corr_test$p[2])`), 
+nor the 3xTg-AD (*r* = `r format(retest_corr_test$cor[1], digits = 2)`, *p* = `r format.p(retest_corr_test$p[1])`) mice.
