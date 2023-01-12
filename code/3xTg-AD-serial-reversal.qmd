@@ -51,6 +51,7 @@ library(lme4)
 library(knitr)
     options(knitr.kable.NA = '')
 library(kableExtra)
+library(lubridate)
     
 source(here("code", "format_p_values.R"))
 
@@ -67,7 +68,10 @@ geno <- read_csv(here("data", "geno clean.csv"),
         geno = case_when(
             geno == "tg" ~ "3xTg-AD",
             geno == "wt" ~ "B6129"),
-        geno = as.factor(geno)) %>% 
+        geno = as.factor(geno),
+        end = mdy(end),
+        retest_date = mdy(retest_date),
+        retest_days = as.numeric(retest_date - end)) %>% 
     clean_names()
 
 # Manual data
@@ -620,12 +624,24 @@ nor the 3xTg-AD (*r* = `r format(total_errors_corr_test$cor[1], digits = 2)`, *p
 retest_dat <- dat %>% 
     filter(retest == TRUE)
 
+retest_date_t_test <- geno %>% 
+    filter(mouse %in% retest_dat$animal) %>%
+    t_test(retest_days ~ geno)
+
+retest_summary <- geno %>% 
+    filter(mouse %in% retest_dat$animal) %>%
+    group_by(geno) %>% 
+    summarise(days_mean = mean(retest_days, na.rm = TRUE),
+            days_sd = sd(retest_days, na.rm = TRUE))
+
 retest_table <- retest_dat %>% 
     group_by(geno) %>% 
     count()
 ```
 
 Due to mice dying, only `r retest_table$n[2]` `r retest_table$geno[2]` and `r retest_table$n[1]` `r retest_table$geno[1]` mice were given the retest.
+
+The retest occurred between `r format(min(retest_dat$retest_days), digits = 2)` and `r format(max(retest_dat$retest_days), digits = 2)` days after the final reversal. There was no difference between between the days until the retest for the B6129 (`r format(retest_summary$days_mean[2], digits = 2)` ± `r format(retest_summary$days_sd[2], digits = 2)`) and 3xTg-AD (`r format(retest_summary$days_mean[1], digits = 2)` ± `r format(retest_summary$days_sd[1], digits = 2)`; *t*~`r format(retest_date_t_test$df, digits = 2)`~ = `r format(retest_date_t_test$statistic, digits = 2)`, *p* `r format.p(retest_date_t_test$p)`).
 
 ```{r}
 #| label: tbl-retest-errors-models
@@ -652,6 +668,35 @@ retest_model_table %>%
 The number of errors made during the retest was assessed with linear maodels. 
 The null model best explained the data for the number of errors made during the retest (@tbl-retest-errors-models), 
 indicating no significant effects of genotype nor sex (@fig-retest-errors).
+
+```{r}
+retest_vs_18_t_test <- retest_dat %>% 
+    left_join(disc_dat %>% 
+                  filter(op == 18) %>% 
+                  select(animal, 
+                         errors_18 = errors)) %>% 
+    pivot_longer(cols = c(errors, errors_18),
+                 names_to = "test",
+                 values_to = "errors") %>% 
+    # group_by(geno) %>% 
+    t_test(errors ~ test,
+           paired = TRUE)
+
+retest_vs_18_summary <- retest_dat %>% 
+    left_join(disc_dat %>% 
+                  filter(op == 18) %>% 
+                  select(animal, 
+                         errors_18 = errors)) %>% 
+    pivot_longer(cols = c(errors, errors_18),
+                 names_to = "test",
+                 values_to = "errors") %>%
+    group_by(test) %>% 
+    summarise(errors_mean = mean(errors),
+              errors_sd = sd(errors))
+```
+
+A paired t-test was used to compare the number of errors made duringthe retest to the numbers of errors made on the final odour discrimination. 
+The mean number of errors made during the retest (`r format(retest_vs_18_summary$errors_mean[1], digits = 2)` ± `r format(retest_vs_18_summary$errors_sd[1], digits = 2)`) was significantly higher than the errors made on the final odour discrimination (`r format(retest_vs_18_summary$errors_mean[2], digits = 2)` ± `r format(retest_vs_18_summary$errors_sd[2], digits = 2)`; *t*~`r format(retest_vs_18_t_test$df, digits = 2)`~ = `r format(retest_vs_18_t_test$statistic, digits = 2)`, *p* `r format.p(retest_vs_18_t_test$p)`).
 
 ```{r}
 #| label: fig-retest-errors
@@ -696,3 +741,27 @@ retest_dat %>%
 Pearson correlations were used to compare the number of errors made on the retest to the age of the mice for each genotype (@fig-retest-corr). 
 The correlations were not significant for either the B6129 (*r* = `r format(retest_corr_test$cor[2], digits = 2)`, *p* `r format.p(retest_corr_test$p[2])`), 
 nor the 3xTg-AD (*r* = `r format(retest_corr_test$cor[1], digits = 2)`, *p* `r format.p(retest_corr_test$p[1])`) mice.
+
+## Time from last test effect
+
+```{r}
+#| label: fig-retest-delay-corr
+#| fig-cap: "Correlation between days after last reversal and errors made on the retest."
+
+retest_days_corr_test <- retest_dat %>% 
+    # group_by(geno) %>%
+    cor_test(errors, retest_days)
+
+retest_dat %>% 
+    ggplot(aes(x = retest_days,
+               y = errors)) +
+    geom_point() +
+    geom_smooth(method = "lm") + 
+    theme_classic() +
+    theme(legend.title = element_blank()) +
+    labs(x = "Days since last reversal",
+         y = "Total errors")
+```
+
+Pearson correlations were used to compare the number of errors made on the retest to the days since the final reversal (@fig-retest-delay-corr). 
+There was a significant, positive correlations (*r* = `r format(retest_days_corr_test$cor, digits = 2)`, *p* `r format.p(retest_days_corr_test$p)`).
