@@ -46,7 +46,7 @@ library(janitor)
 library(rstatix)
 library(tidyverse)
 library(MuMIn)
-    options(na.action = "na.fail")
+    # options(na.action = "na.fail")
 library(lme4)
 library(knitr)
     options(knitr.kable.NA = '')
@@ -219,13 +219,13 @@ A t-test was used to compare the number of errors made during training.
 The B6129 mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`) made more errors than the 3xTg-AD mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`; *t*~`r format(training_t_test$df, digits == 2)`~ = `r format(training_t_test$statistic, digits == 2)`, *p* `r format.p(training_t_test$p)`, @fig-training-errors).
 
 
-# Overall
+# Difference scores
 
 ```{r}
 #| label: fig-overall
 #| fig-cap: "Errors (±95% CI) made by the mice at on each odour pair."
 
-dat %>% 
+overall_dat <- dat %>% 
     filter(retest == FALSE,
            op > 0) %>% 
     pivot_wider(id_cols = c(animal, op, geno),
@@ -235,7 +235,9 @@ dat %>%
            op,
            geno,
            disc = `FALSE`,
-           rev = `TRUE`) %>% 
+           rev = `TRUE`)
+
+overall_dat %>% 
     ggplot(aes(y = disc,
                x = op,
                colour = geno)) +
@@ -244,23 +246,13 @@ dat %>%
                      x = op + .33),
                  shape = 1,
                  fun.data = "mean_cl_boot") +
-    geom_segment(data = dat %>% 
-                     filter(retest == FALSE,
-                            op > 0) %>% 
-                     pivot_wider(id_cols = c(animal, op, geno),
-                                 names_from = rev,
-                                 values_from = errors) %>% 
-                     select(animal,
-                            op,
-                            geno,
-                            disc = `FALSE`,
-                            rev = `TRUE`) %>% 
+    geom_segment(data = overall_dat %>% 
                      group_by(op, geno) %>% 
                      summarise(x = mean(op),
                                y = mean(disc, na.rm = TRUE),
                                xend = mean(op) + .33,
                                yend = mean(rev, na.rm = TRUE)),
-                     aes(x = x, y = y, xend = xend, yend = yend),
+                 aes(x = x, y = y, xend = xend, yend = yend),
                  colour = "black") +
     facet_grid(rows = vars(geno)) +
     theme_bw() +
@@ -270,6 +262,66 @@ dat %>%
          y = "Errors")
     
 ```
+
+```{r}
+overall_diffs <- overall_dat %>% 
+    mutate(diff_score = rev - disc,
+           diff_pro = rev / disc)
+
+overall_diffs_summary <- overall_diffs %>% 
+    group_by(op, geno) %>% 
+    summarise(across(starts_with("diff"),
+                     .fns = list(mean = ~ mean(.x, na.rm = TRUE),
+                                 sd = ~ sd(.x, na.rm = TRUE)),
+                     .names = "{.col}_{.fn}"))
+
+first_third_aov <- overall_diffs %>% 
+    filter(op < 7,
+           !is.na(diff_score)) %>% 
+    ungroup() %>% 
+    anova_test(dv = diff_score,
+               between = geno,
+               wid = animal,
+               within = op) %>% 
+    get_anova_table()
+
+first_third_ph <- overall_diffs %>% 
+    filter(op < 7,
+           !is.na(diff_score)) %>% 
+    group_by(op) %>% 
+    tukey_hsd(diff_score ~ geno)
+
+second_third_aov <- overall_diffs %>% 
+    filter(op >= 7,
+           op < 13,
+           !is.na(diff_score)) %>% 
+    ungroup() %>% 
+    anova_test(dv = diff_score,
+               between = geno,
+               wid = animal,
+               within = op) %>% 
+    get_anova_table()
+
+last_third_aov <- overall_diffs %>% 
+    filter(op > 12,
+           !is.na(diff_score)) %>% 
+    ungroup() %>% 
+    anova_test(dv = diff_score,
+               between = geno,
+               wid = animal,
+               within = op) %>% 
+    get_anova_table()
+```
+
+The sequence of odour pairs was divided into thirds, and ANOVAs examining the differences between the errors on the discrimination trials and the reversal trials were run on each third.
+Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
+
+In the first third of odour pairs, there were significant effects of genotype (*F*~(`r format(first_third_aov$DFn[1], digits = 2)`,`r format(first_third_aov$DFd[1], digits = 2)`)~ = `r format(first_third_aov$F[1], digits = 2)`, *p* `r format.p(first_third_aov$p[1], digits = 2)`, , $\eta^2_G$ = `r format(first_third_aov$ges[1], digits = 2)`) and odour pair (*F*~(`r format(first_third_aov$DFn[2], digits = 2)`,`r format(first_third_aov$DFd[2], digits = 2)`)~ = `r format(first_third_aov$F[2], digits = 2)`, *p* `r format.p(first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[2], digits = 2)`; @fig-overall).
+There was no significant interaction (*F*~(`r format(first_third_aov$DFn[3], digits = 2)`,`r format(first_third_aov$DFd[3], digits = 2)`)~ = `r format(first_third_aov$F[3], digits = 2)`, *p* `r format.p(first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[3], digits = 2)`)).
+Post-hoc Tukey HSD tests found that there was a significant difference between the B6129 and 3xTg-AD mice on the second odour pair (*p* `r format.p(first_third_ph$p.adj[2])`).
+
+On the second and last thirds there were no significant effects (*p*'s >= `r format(min(c(second_third_aov$p, last_third_aov$p)), digits = 2)`).
+
 
 # Discrimination
 
