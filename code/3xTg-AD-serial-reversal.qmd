@@ -146,10 +146,9 @@ incomplete_mice <- dat %>%
     pull(animal) %>% 
     unique()
 
-# Drop mice with incomplete data and male mice
+# Drop mice with incomplete data mice
 dat <- dat %>% 
-    filter(!(animal %in% incomplete_mice),
-           sex == "Female")
+    filter(!(animal %in% incomplete_mice))
 ```
 
 # Subjects
@@ -174,15 +173,14 @@ geno %>%
         linesep = "")
 
 t_test_age <- geno %>% 
-    filter(!(mouse %in% incomplete_mice),
-           sex == "Female") %>%
+    filter(!(mouse %in% incomplete_mice)) %>%
     ungroup() %>% 
     t_test(days ~ geno)
 
 ```
 
-Due to the small number of male mice, only females are included in this analysis.
-There are `r dat %>% pull(animal) %>% unique() %>% length()` female mice included in this study. 
+Due to the small number of male mice, sexes are lumped together in this analysis.
+There are `r dat %>% pull(animal) %>% unique() %>% length()` mice included in this study. 
 There was no significant difference in age between the 3xTg-AD and B6129 mice (*t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`; @tbl-subjects).
 
 # Training
@@ -218,7 +216,60 @@ training_dat %>%
 ```
 
 A t-test was used to compare the number of errors made during training.
-The B6129 mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`) made mare errors than the 3xTg-AD mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`; *t*~`r format(training_t_test$df, digits == 2)`~ = `r format(training_t_test$statistic, digits == 2)`, *p* `r format.p(training_t_test$p)`, @fig-training-errors).
+The B6129 mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`) made more errors than the 3xTg-AD mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`; *t*~`r format(training_t_test$df, digits == 2)`~ = `r format(training_t_test$statistic, digits == 2)`, *p* `r format.p(training_t_test$p)`, @fig-training-errors).
+
+
+# Overall
+
+```{r}
+#| label: fig-overall
+#| fig-cap: "Errors (±95% CI) made by the mice at on each odour pair."
+
+dat %>% 
+    filter(retest == FALSE,
+           op > 0) %>% 
+    pivot_wider(id_cols = c(animal, op, geno),
+                names_from = rev,
+                values_from = errors) %>% 
+    select(animal,
+           op,
+           geno,
+           disc = `FALSE`,
+           rev = `TRUE`) %>% 
+    ggplot(aes(y = disc,
+               x = op,
+               colour = geno)) +
+    stat_summary(fun.data = "mean_cl_boot") +
+    stat_summary(aes(y = rev,
+                     x = op + .33),
+                 shape = 1,
+                 fun.data = "mean_cl_boot") +
+    geom_segment(data = dat %>% 
+                     filter(retest == FALSE,
+                            op > 0) %>% 
+                     pivot_wider(id_cols = c(animal, op, geno),
+                                 names_from = rev,
+                                 values_from = errors) %>% 
+                     select(animal,
+                            op,
+                            geno,
+                            disc = `FALSE`,
+                            rev = `TRUE`) %>% 
+                     group_by(op, geno) %>% 
+                     summarise(x = mean(op),
+                               y = mean(disc, na.rm = TRUE),
+                               xend = mean(op) + .33,
+                               yend = mean(rev, na.rm = TRUE)),
+                     aes(x = x, y = y, xend = xend, yend = yend),
+                 colour = "black") +
+    facet_grid(rows = vars(geno)) +
+    theme_bw() +
+    theme(panel.grid = element_blank(),
+          legend.position = "none") +
+    labs(x = "Odour pair",
+         y = "Errors")
+    
+```
 
 # Discrimination
 
@@ -228,7 +279,8 @@ The B6129 mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r f
 
 disc_dat <- dat %>% 
     filter(retest == FALSE, 
-           rev == FALSE)
+           rev == FALSE,
+           op > 0)
 
 disc_dat %>% 
     ggplot(aes(x = op,
