@@ -185,6 +185,41 @@ Due to the small number of male mice, only females are included in this analysis
 There are `r dat %>% pull(animal) %>% unique() %>% length()` female mice included in this study. 
 There was no significant difference in age between the 3xTg-AD and B6129 mice (*t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`; @tbl-subjects).
 
+# Training
+
+```{r}
+#| label: fig-training-errors
+#| fig-cap: "Errors madeduring training."
+
+training_dat <- dat %>% 
+    filter(op == 0)
+
+training_t_test <- training_dat %>% 
+    ungroup() %>% 
+    t_test(errors ~ geno)
+
+training_summmary <- training_dat %>% 
+    group_by(geno) %>% 
+    summarise(errors_mean = mean(errors),
+              errors_sd = sd(errors))
+
+training_dat %>% 
+    ggplot(aes(x = geno,
+               y = errors,
+               fill = geno)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_dotplot(binaxis = "y", 
+               stackdir = "center",
+               fill = NA) +
+    theme_classic() +
+    theme(legend.position = "none") +
+    labs(y = "Training errors",
+         x = "Genotype")
+```
+
+A t-test was used to compare the number of errors made during training.
+The B6129 mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`) made mare errors than the 3xTg-AD mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`; *t*~`r format(training_t_test$df, digits == 2)`~ = `r format(training_t_test$statistic, digits == 2)`, *p* `r format.p(training_t_test$p)`, @fig-training-errors).
+
 # Discrimination
 
 ```{r}
