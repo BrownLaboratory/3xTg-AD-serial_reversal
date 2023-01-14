@@ -196,7 +196,7 @@ training_t_test <- training_dat %>%
     ungroup() %>% 
     t_test(errors ~ geno)
 
-training_summmary <- training_dat %>% 
+training_summary <- training_dat %>% 
     group_by(geno) %>% 
     summarise(errors_mean = mean(errors),
               errors_sd = sd(errors))
@@ -216,7 +216,7 @@ training_dat %>%
 ```
 
 A t-test was used to compare the number of errors made during training.
-The B6129 mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`) made more errors than the 3xTg-AD mice (`r format(training_summary$errors_mean[2], digits == 2)` ± `r format(training_summary$errors_sd[2], digits == 2)`; *t*~`r format(training_t_test$df, digits == 2)`~ = `r format(training_t_test$statistic, digits == 2)`, *p* `r format.p(training_t_test$p)`, @fig-training-errors).
+The B6129 mice (`r format(training_summary$errors_mean[2], digits = 2)` ± `r format(training_summary$errors_sd[2], digits = 2)`) made more errors than the 3xTg-AD mice (`r format(training_summary$errors_mean[2], digits = 2)` ± `r format(training_summary$errors_sd[2], digits = 2)`; *t*~`r format(training_t_test$df, digits = 2)`~ = `r format(training_t_test$statistic, digits = 2)`, *p* `r format.p(training_t_test$p)`, @fig-training-errors).
 
 
 # Difference scores
@@ -385,11 +385,6 @@ disc_dat %>%
 #     # kable_styling(latex_options = c("scale_down"))
 ```
 
-<!-- The discrimination trials were assessed with linear mixed effects models on the number of errors made on each odour pair.  -->
-<!-- The errors made decreased as the mice advanced through the odour pairs (@fig-disc).  -->
-<!-- The  model with just an effect of odour pair best explained the data (@tbl-disc-models),  -->
-<!-- this model differed from the null model ($\chi$^2^~`r format(disc_aov$df[2], digits = 2)`~ = `r format(disc_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_aov$p.value[2])`). -->
-
 ```{r}
 disc_first_third_aov <- disc_dat %>% 
     filter(op < 7) %>% 
@@ -544,15 +539,8 @@ With `r disc_errorless_table %>% length()` mice passing at least one discriminat
 One mouse, a `r disc_best_geno`, had one or fewer errors on the initial discrimination of `r disc_errorless_table %>% max()` odour pairs.
 
 Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorsless learning. 
-The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(disc_errorless_chi_op$parameter, digits = 2)~` = `r format(disc_errorless_chi_op$statistic, digits = 2)`, *p* `r `format.p(disc_errorless_chi_op$p.value)`),
-while the $\chi^2$ on the effect of genotype was not ($\chi^2$~`r format(disc_errorless_chi_geno$parameter, digits = 2)~` = `r format(disc_errorless_chi_geno$statistic, digits = 2)`, *p* `r `format.p(disc_errorless_chi_geno$p.value)`).
-
-<!-- During the second half of the experiment, odour pairs 10 through 18, the B6129 made an average of `r format(disc_second_half$errors_mean[2], digits = 2)` ± `r format(disc_second_half$errors_sd[2], digits = 2)` errors,  -->
-<!-- while the 3xTg-AD mice made `r format(disc_second_half$errors_mean[1], digits = 2)` ± `r format(disc_second_half$errors_sd[1], digits = 2)` errors. -->
-<!-- This difference was not significant (*t*~`r format(disc_second_half_t_test$df, digits = 2)`~ = `r format(disc_second_half_t_test$statistic, digits = 2)`, *p* `r format.p(disc_second_half_t_test$p)`). -->
-
-<!-- Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair.  -->
-<!-- The model with an effect of genotype best explained the data (@tbl-disc-errorless-models), but did not differ from the null model ($\chi$^2^~`r format(disc_errorless_aov$df[2], digits = 2)`~ = `r format(disc_errorless_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_errorless_aov$p.value[2])`). -->
+The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(disc_errorless_chi_op$parameter, digits = 2)`~ = `r format(disc_errorless_chi_op$statistic, digits = 2)`, *p* `r format.p(disc_errorless_chi_op$p.value)`),
+while the $\chi^2$ on the effect of genotype was not ($\chi^2$~`r format(disc_errorless_chi_geno$parameter, digits = 2)`~ = `r format(disc_errorless_chi_geno$statistic, digits = 2)`, *p* `r format.p(disc_errorless_chi_geno$p.value)`).
 
 ## Age effects
 
@@ -692,11 +680,6 @@ Post hoc Tukey HSD tests found that there were significant genotype differences 
 
 There were no significant effects in the second or last thirds of trials (*p*'s >= `r format(min(c(rev_second_third_aov$p,rev_last_third_aov$p), digits = 2))`).
 
-<!-- The reversal trials were assessed with linear mixed effects models on the number of errors made on each odour pair.  -->
-<!-- The errors made decreased as the mice advanced through the odour pairs (@fig-rev).  -->
-<!-- The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-rev-models),  -->
-<!-- this model differed significantly from the null model of just an effect of odour pair ($\chi$^2^~`r format(rev_aov$df[2], digits = 2)`~ = `r format(rev_aov$statistic[2], digits = 2)`, *p* `r format.p(rev_aov$p.value[2])`). -->
-
 ## Near errorless learning
 
 ```{r}
@@ -804,14 +787,8 @@ With `r rev_errorless_table %>% length()` mice passing at least one reversal wit
 One mouse, the same `r rev_best_geno` mentioned in the discrimination, had one or fewer errors on the reversal of `r rev_errorless_table %>% max()` odour pairs.
 
 Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorsless learning. 
-The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(rev_errorless_chi_op$parameter, digits = 2)~` = `r format(rev_errorless_chi_op$statistic, digits = 2)`, *p* `r `format.p(rev_errorless_chi_op$p.value)`),
-while the $\chi^2$ on the effect of genotype was not ($\chi^2$~`r format(rev_errorless_chi_geno$parameter, digits = 2)~` = `r format(rev_errorless_chi_geno$statistic, digits = 2)`, *p* `r `format.p(rev_errorless_chi_geno$p.value)`).
-
-<!-- During the second half of the experiment, odour pairs 10 through 18, the B6129 made an average of `r format(rev_second_half$errors_mean[2], digits = 2)` ± `r format(rev_second_half$errors_sd[2], digits = 2)` errors,  -->
-<!-- while the 3xTg-AD mice made `r format(rev_second_half$errors_mean[1], digits = 2)` ± `r format(rev_second_half$errors_sd[1], digits = 2)` errors, a significant difference (*t*~`r format(rev_second_half_t_test$df, digits = 2)`~ = `r format(rev_second_half_t_test$statistic, digits = 2)`, *p* `r format.p(rev_second_half_t_test$p)`). -->
-
-<!-- Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair.  -->
-<!-- The null model best explained the data (@tbl-rev-errorless-models). -->
+The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(rev_errorless_chi_op$parameter, digits = 2)`~ = `r format(rev_errorless_chi_op$statistic, digits = 2)`, *p* `r format.p(rev_errorless_chi_op$p.value)`),
+while the $\chi^2$ on the effect of genotype was not ($\chi^2$~`r format(rev_errorless_chi_geno$parameter, digits = 2)`~ = `r format(rev_errorless_chi_geno$statistic, digits = 2)`, *p* `r format.p(rev_errorless_chi_geno$p.value)`).
 
 ## Age effects
 
@@ -888,22 +865,20 @@ total_errors_aov <- total_errors_dat %>%
 An ANOVA was used to assess the total errors made during the discrimination and reversal trials.
 There was a significant effect of genotype (*F*~(`r format(total_errors_aov$DFn, digits = 2)`,`r format(total_errors_aov$DFd, digits = 2)`)~ = `r format(total_errors_aov$F, digits = 2)`, *p* `r format.p(total_errors_aov$p, digits = 2)`, $\eta^2_G$ = `r format(total_errors_aov$ges, digits = 2)`; @fig-total-errors).
 
-<!-- The total errors made were assessed with linear models.  -->
-<!-- The model with an effect of genotype best explained the data (@tbl-total-errors-models),  -->
-<!-- this model differed significantly from the null model (*F*~`r format(total_errors_aov$df[2], digits = 2)`~ = `r format(total_errors_aov$statistic[2], digits = 2)`, *p* `r format.p(total_errors_aov$p.value[2])`; @fig-total-errors). -->
-
 ```{r}
 #| label: fig-total-errors
 #| fig-cap: "Total errors made, excluding retest."
 
 total_errors_dat %>% 
     ggplot(aes(x = geno,
-               y = total_errors)) +
+               y = total_errors,
+               fill = geno)) +
     geom_boxplot(outlier.shape = NA) +
     geom_dotplot(binaxis = "y", 
                stackdir = "center",
                fill = NA) +
     theme_classic() +
+    theme(legend.position = "none") +
     labs(y = "Total errors",
          x = "Genotype")
 
