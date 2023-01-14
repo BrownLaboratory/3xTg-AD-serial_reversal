@@ -416,7 +416,7 @@ disc_second_third_aov <- disc_dat %>%
     get_anova_table()
 
 disc_last_third_aov <- disc_dat %>% 
-    filter(op <= 13) %>% 
+    filter(op >= 13) %>% 
     ungroup() %>% 
     anova_test(dv = errors,
                between = geno,
@@ -425,18 +425,18 @@ disc_last_third_aov <- disc_dat %>%
     get_anova_table()
 ```
 
-The sequence of odour pairs was divided into thirds, and ANOVAs examining the  the errors on the discrimination trials were run on each third.
+The sequence of odour pairs was divided into thirds, and ANOVAs examining the  the errors on the discrimination trials were run on each third (@fig-disc).
 Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
 
 In the first third of trials there was a significant effect of odour pair (*F*~(`r format(disc_first_third_aov$DFn[2], digits = 2)`,`r format(disc_first_third_aov$DFd[2], digits = 2)`)~ = `r format(disc_first_third_aov$F[2], digits = 2)`, *p* `r format.p(disc_first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(disc_first_third_aov$ges[2], digits = 2)`), 
 but no effect of genotype (*F*~(`r format(disc_first_third_aov$DFn[1], digits = 2)`,`r format(disc_first_third_aov$DFd[1], digits = 2)`)~ = `r format(disc_first_third_aov$F[1], digits = 2)`, *p* `r format.p(disc_first_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(disc_first_third_aov$ges[1], digits = 2)`), 
 nor an interaction (*F*~(`r format(disc_first_third_aov$DFn[3], digits = 2)`,`r format(disc_first_third_aov$DFd[3], digits = 2)`)~ = `r format(disc_first_third_aov$F[3], digits = 2)`, *p* `r format.p(disc_first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(disc_first_third_aov$ges[3], digits = 2)`).
 
-In the second third of trials there were no significant effects (*p*'s >=`r format(min(disc_second_third_aov$p), digits = 2)`).
+There were no significant effects in the second or last thirds of trials (*p*'s >= `r format(min(c(disc_second_third_aov$p,disc_last_third_aov$p), digits = 2))`).
 
-In the last third of trials there was a significant effect of odour pair (*F*~(`r format(disc_last_third_aov$DFn[2], digits = 2)`,`r format(disc_last_third_aov$DFd[2], digits = 2)`)~ = `r format(disc_last_third_aov$F[2], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[2], digits = 2)`), 
-but no effect of genotype (*F*~(`r format(disc_last_third_aov$DFn[1], digits = 2)`,`r format(disc_last_third_aov$DFd[1], digits = 2)`)~ = `r format(disc_last_third_aov$F[1], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[1], digits = 2)`), 
-nor an interaction (*F*~(`r format(disc_last_third_aov$DFn[3], digits = 2)`,`r format(disc_last_third_aov$DFd[3], digits = 2)`)~ = `r format(disc_last_third_aov$F[3], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[3], digits = 2)`).
+<!-- In the last third of trials there was a significant effect of odour pair (*F*~(`r format(disc_last_third_aov$DFn[2], digits = 2)`,`r format(disc_last_third_aov$DFd[2], digits = 2)`)~ = `r format(disc_last_third_aov$F[2], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[2], digits = 2)`),  -->
+<!-- but no effect of genotype (*F*~(`r format(disc_last_third_aov$DFn[1], digits = 2)`,`r format(disc_last_third_aov$DFd[1], digits = 2)`)~ = `r format(disc_last_third_aov$F[1], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[1], digits = 2)`),  -->
+<!-- nor an interaction (*F*~(`r format(disc_last_third_aov$DFn[3], digits = 2)`,`r format(disc_last_third_aov$DFd[3], digits = 2)`)~ = `r format(disc_last_third_aov$F[3], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[3], digits = 2)`). -->
 
 ## Near errorless learning
 
@@ -596,8 +596,8 @@ rev_dat %>%
     ggplot(aes(x = op,
                y = errors,
                colour = geno)) +
-    geom_point(alpha = .2,
-               shape = 20) + 
+    # geom_point(alpha = .2,
+    #            shape = 20) + 
     stat_summary(fun.data = "mean_cl_boot") +
     geom_smooth(se = FALSE) +
     theme_classic() +
@@ -613,43 +613,95 @@ rev_dat %>%
 #| tbl-cap: "AICc model table for reversal."
 
 # Reversal
-rev_fm <- lmer(errors ~ op * geno + (1|animal),
-               data = rev_dat,
-               REML = FALSE)
-
-rev_model_table <- dredge(rev_fm)
-
-rev_best_model <- get.models(rev_model_table,
-                             subset = delta == 0)[[1]]
-
-rev_null_model <- lmer(errors ~ (1|animal),
-                       data = rev_dat,
-                       REML = FALSE)
-
-rev_aov <- anova(rev_best_model, rev_null_model) %>% tidy()
-
-attr(rev_model_table$weight, 'model.weights') <- NULL
-
-rev_model_table %>% 
-    mutate(weight = round(weight, 2)) %>% 
-    select(-`(Intercept)`) %>% 
-    kable(digits = 2,
-          row.names = FALSE,
-          booktabs = TRUE,
-          linesep = "") 
+# rev_fm <- lmer(errors ~ op * geno + (1|animal),
+#                data = rev_dat,
+#                REML = FALSE)
+# 
+# rev_model_table <- dredge(rev_fm)
+# 
+# rev_best_model <- get.models(rev_model_table,
+#                              subset = delta == 0)[[1]]
+# 
+# rev_null_model <- lmer(errors ~ (1|animal),
+#                        data = rev_dat,
+#                        REML = FALSE)
+# 
+# rev_aov <- anova(rev_best_model, rev_null_model) %>% tidy()
+# 
+# attr(rev_model_table$weight, 'model.weights') <- NULL
+# 
+# rev_model_table %>% 
+#     mutate(weight = round(weight, 2)) %>% 
+#     select(-`(Intercept)`) %>% 
+#     kable(digits = 2,
+#           row.names = FALSE,
+#           booktabs = TRUE,
+#           linesep = "") 
     # kable_styling(latex_options = c("scale_down"))
 ```
 
-The reversal trials were assessed with linear mixed effects models on the number of errors made on each odour pair. 
-The errors made decreased as the mice advanced through the odour pairs (@fig-rev). 
-The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-rev-models), 
-this model differed significantly from the null model of just an effect of odour pair ($\chi$^2^~`r format(rev_aov$df[2], digits = 2)`~ = `r format(rev_aov$statistic[2], digits = 2)`, *p* `r format.p(rev_aov$p.value[2])`).
+```{r}
+
+rev_first_third_aov <- rev_dat %>% 
+    filter(op < 7) %>% 
+    ungroup() %>% 
+    anova_test(dv = errors,
+               between = geno,
+               wid = animal,
+               within = op) %>% 
+    get_anova_table()
+
+rev_first_third_ph <- rev_dat %>% 
+    filter(op < 7) %>% 
+    group_by(op) %>%
+    tukey_hsd(errors ~ geno)
+
+rev_second_third_aov <- rev_dat %>% 
+    filter(op >= 7,
+           op < 13) %>% 
+    ungroup() %>% 
+    anova_test(dv = errors,
+               between = geno,
+               wid = animal,
+               within = op) %>% 
+    get_anova_table()
+
+rev_last_third_aov <- rev_dat %>% 
+    filter(op >= 13) %>% 
+    ungroup() %>% 
+    anova_test(dv = errors,
+               between = geno,
+               wid = animal,
+               within = op) %>% 
+    get_anova_table()
+
+rev_last_third_ph <- rev_dat %>% 
+    filter(op >= 13) %>% 
+    group_by(op) %>%
+    tukey_hsd(errors ~ geno)
+```
+
+The sequence of odour pairs was divided into thirds, and ANOVAs examining the  the errors on the reversal trials were run on each third (@fig-rev).
+Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
+
+In the first third of trials there were significant effects of odour pair (*F*~(`r format(rev_first_third_aov$DFn[2], digits = 2)`,`r format(rev_first_third_aov$DFd[2], digits = 2)`)~ = `r format(rev_first_third_aov$F[2], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[2], digits = 2)`), 
+and of genotype (*F*~(`r format(rev_first_third_aov$DFn[1], digits = 2)`,`r format(rev_first_third_aov$DFd[1], digits = 2)`)~ = `r format(rev_first_third_aov$F[1], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[1], digits = 2)`), 
+but no interaction (*F*~(`r format(rev_first_third_aov$DFn[3], digits = 2)`,`r format(rev_first_third_aov$DFd[3], digits = 2)`)~ = `r format(rev_first_third_aov$F[3], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[3], digits = 2)`).
+
+Post hoc Tukey HSD tests found that there were significant genotype differences on odour pairs 2 (adjusted *p* `r format.p(rev_first_third_ph$p.adj[2])`) and 6 (adjusted *p* `r format.p(rev_first_third_ph$p.adj[6])`).
+
+There were no significant effects in the second or last thirds of trials (*p*'s >= `r format(min(c(rev_second_third_aov$p,rev_last_third_aov$p), digits = 2))`).
+
+<!-- The reversal trials were assessed with linear mixed effects models on the number of errors made on each odour pair.  -->
+<!-- The errors made decreased as the mice advanced through the odour pairs (@fig-rev).  -->
+<!-- The model with effects of genotype, odour pair, and the genotype by odour pair interaction best explained the data (@tbl-rev-models),  -->
+<!-- this model differed significantly from the null model of just an effect of odour pair ($\chi$^2^~`r format(rev_aov$df[2], digits = 2)`~ = `r format(rev_aov$statistic[2], digits = 2)`, *p* `r format.p(rev_aov$p.value[2])`). -->
 
 ## Near errorless learning
 
 ```{r}
-#| label: tbl-rev-errorless-models
-#| tbl-cap: "AICc model table for near errorless learning during reversal"
+#| label: fig-rev-errorless
+#| fig-cap: "Number of mice showing errorless learning on each odour pair during reversal"
 
 rev_1_error <- rev_dat %>% 
     filter(errors == 1)
@@ -673,57 +725,93 @@ rev_best_geno <- geno$geno[geno$mouse == rev_best_mouse]
 rev_errorless_dat <- rev_dat %>% 
     mutate(errorless = errors <= 1)
 
-rev_errorless_mf <- glmer(errorless ~ geno + (1|animal),
-                           data = rev_errorless_dat,
-                           family = "binomial")
+rev_errorless_dat %>% 
+    filter(errorless) %>% 
+    group_by(geno, op) %>% 
+    count() %>%
+    ungroup() %>% 
+    complete(geno = levels(dat$geno),
+             op = 1:18,
+             fill = list(n = 0)) %>% 
+    ggplot(aes(x = op,
+               y = n,
+               colour = geno)) +
+    geom_point(position = position_dodge(width = .33)) +
+    theme_classic() +
+    labs(x = "Odour pair",
+         y = "Number of mice with 0 or 1 errors")  +
+    theme(legend.title = element_blank(),
+          legend.position = c(.1, .9))
+```
 
-rev_errorless_model_table <- dredge(rev_errorless_mf)
+```{r}
+rev_errorless_chi_op <- tabyl(rev_errorless_dat, op, errorless) %>%
+    chisq.test()
 
-rev_errorless_best_model <- get.models(rev_errorless_model_table,
-                                        subset = delta == 0)[[1]]
+rev_errorless_chi_geno <- tabyl(rev_errorless_dat, geno, errorless) %>%
+    chisq.test()
+```
 
-rev_errorless_null_model <- glmer(errorless ~ 1 + (1|animal),
-                                   data = rev_errorless_dat,
-                                   family = "binomial")
 
-rev_errorless_aov <- anova(rev_errorless_best_model, 
-                            rev_errorless_null_model) %>% 
-    tidy()
+```{r}
+#| label: tbl-rev-errorless-models
+#| tbl-cap: "AICc model table for near errorless learning during reversal"
 
-attr(rev_errorless_model_table$weight, 'model.weights') <- NULL
-
-rev_errorless_model_table %>% 
-    mutate(weight = round(weight, 2)) %>% 
-    select(-`(Intercept)`) %>% 
-    kable(digits = 2,
-          row.names = FALSE,
-          booktabs = TRUE,
-          linesep = "")
+# rev_errorless_mf <- glmer(errorless ~ geno + (1|animal),
+#                            data = rev_errorless_dat,
+#                            family = "binomial")
+# 
+# rev_errorless_model_table <- dredge(rev_errorless_mf)
+# 
+# rev_errorless_best_model <- get.models(rev_errorless_model_table,
+#                                         subset = delta == 0)[[1]]
+# 
+# rev_errorless_null_model <- glmer(errorless ~ 1 + (1|animal),
+#                                    data = rev_errorless_dat,
+#                                    family = "binomial")
+# 
+# rev_errorless_aov <- anova(rev_errorless_best_model, 
+#                             rev_errorless_null_model) %>% 
+#     tidy()
+# 
+# attr(rev_errorless_model_table$weight, 'model.weights') <- NULL
+# 
+# rev_errorless_model_table %>% 
+#     mutate(weight = round(weight, 2)) %>% 
+#     select(-`(Intercept)`) %>% 
+#     kable(digits = 2,
+#           row.names = FALSE,
+#           booktabs = TRUE,
+#           linesep = "")
 
 ```
 
 ```{r}
-rev_second_half <- rev_dat %>% 
-    filter(op >= 10) %>% 
-    group_by(geno) %>% 
-    summarise(errors_mean = mean(errors),
-              errors_sd = sd(errors))
-
-rev_second_half_t_test <- rev_dat %>%
-    filter(op >= 10) %>%
-    ungroup() %>%
-    t_test(errors ~ geno)
+# rev_second_half <- rev_dat %>% 
+#     filter(op >= 10) %>% 
+#     group_by(geno) %>% 
+#     summarise(errors_mean = mean(errors),
+#               errors_sd = sd(errors))
+# 
+# rev_second_half_t_test <- rev_dat %>%
+#     filter(op >= 10) %>%
+#     ungroup() %>%
+#     t_test(errors ~ geno)
 ```
 
-There were `r rev_1_error %>% nrow()` instances of mice making a single error on the reversal of the odour pair, and `r rev_0_error %>% nrow()` instances of a mouse making zero errors. 
+There were `r rev_1_error %>% nrow()` instances of mice making a single error on the reversal of the odour pair, and `r rev_0_error %>% nrow()` instances of a mouse making zero errors (@fig-rev-errorless). 
 With `r rev_errorless_table %>% length()` mice passing at least one reversal with just one or zero errors.
 One mouse, the same `r rev_best_geno` mentioned in the discrimination, had one or fewer errors on the reversal of `r rev_errorless_table %>% max()` odour pairs.
 
-During the second half of the experiment, odour pairs 10 through 18, the B6129 made an average of `r format(rev_second_half$errors_mean[2], digits = 2)` ± `r format(rev_second_half$errors_sd[2], digits = 2)` errors, 
-while the 3xTg-AD mice made `r format(rev_second_half$errors_mean[1], digits = 2)` ± `r format(rev_second_half$errors_sd[1], digits = 2)` errors, a significant difference (*t*~`r format(rev_second_half_t_test$df, digits = 2)`~ = `r format(rev_second_half_t_test$statistic, digits = 2)`, *p* `r format.p(rev_second_half_t_test$p)`).
+Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorsless learning. 
+The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(rev_errorless_chi_op$parameter, digits = 2)~` = `r format(rev_errorless_chi_op$statistic, digits = 2)`, *p* `r `format.p(rev_errorless_chi_op$p.value)`),
+while the $\chi^2$ on the effect of genotype was not ($\chi^2$~`r format(rev_errorless_chi_geno$parameter, digits = 2)~` = `r format(rev_errorless_chi_geno$statistic, digits = 2)`, *p* `r `format.p(rev_errorless_chi_geno$p.value)`).
 
-Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair. 
-The null model best explained the data (@tbl-rev-errorless-models).
+<!-- During the second half of the experiment, odour pairs 10 through 18, the B6129 made an average of `r format(rev_second_half$errors_mean[2], digits = 2)` ± `r format(rev_second_half$errors_sd[2], digits = 2)` errors,  -->
+<!-- while the 3xTg-AD mice made `r format(rev_second_half$errors_mean[1], digits = 2)` ± `r format(rev_second_half$errors_sd[1], digits = 2)` errors, a significant difference (*t*~`r format(rev_second_half_t_test$df, digits = 2)`~ = `r format(rev_second_half_t_test$statistic, digits = 2)`, *p* `r format.p(rev_second_half_t_test$p)`). -->
+
+<!-- Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair.  -->
+<!-- The null model best explained the data (@tbl-rev-errorless-models). -->
 
 ## Age effects
 
@@ -761,40 +849,48 @@ nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* `r form
 #### Total errors ---------------------------------------------------
 
 total_errors_dat <- dat %>% 
-    filter(retest == FALSE) %>% 
+    filter(retest == FALSE,
+           op > 0) %>% 
     group_by(animal, geno, days) %>% 
     summarise(total_errors = sum(errors))
 
-total_errors_fm <- lm(total_errors ~ geno,
-                      data = total_errors_dat)
+total_errors_aov <- total_errors_dat %>% 
+    ungroup() %>% 
+    anova_test(total_errors ~ geno)
 
-total_errors_model_table <- dredge(total_errors_fm)
-
-total_errors_best_model <- get.models(total_errors_model_table,
-                                      delta == 0)[[1]]
-
-total_errors_null_model <- lm(total_errors ~ 1,
-                              data = total_errors_dat)
-
-total_errors_aov <- anova(total_errors_null_model,
-                          total_errors_best_model) %>% 
-    tidy()
-
-attr(total_errors_model_table$weight, 'model.weights') <- NULL
-
-total_errors_model_table %>% 
-    mutate(weight = round(weight, 2)) %>% 
-    select(-`(Intercept)`) %>% 
-    kable(digits = 2,
-          row.names = FALSE,
-          booktabs = TRUE,
-          linesep = "")
+# total_errors_fm <- lm(total_errors ~ geno,
+#                       data = total_errors_dat)
+# 
+# total_errors_model_table <- dredge(total_errors_fm)
+# 
+# total_errors_best_model <- get.models(total_errors_model_table,
+#                                       delta == 0)[[1]]
+# 
+# total_errors_null_model <- lm(total_errors ~ 1,
+#                               data = total_errors_dat)
+# 
+# total_errors_aov <- anova(total_errors_null_model,
+#                           total_errors_best_model) %>% 
+#     tidy()
+# 
+# attr(total_errors_model_table$weight, 'model.weights') <- NULL
+# 
+# total_errors_model_table %>% 
+#     mutate(weight = round(weight, 2)) %>% 
+#     select(-`(Intercept)`) %>% 
+#     kable(digits = 2,
+#           row.names = FALSE,
+#           booktabs = TRUE,
+#           linesep = "")
 
 ```
 
-The total errors made were assessed with linear models. 
-The model with an effect of genotype best explained the data (@tbl-total-errors-models), 
-this model differed significantly from the null model (*F*~`r format(total_errors_aov$df[2], digits = 2)`~ = `r format(total_errors_aov$statistic[2], digits = 2)`, *p* `r format.p(total_errors_aov$p.value[2])`; @fig-total-errors).
+An ANOVA was used to assess the total errors made during the discrimination and reversal trials.
+There was a significant effect of genotype (*F*~(`r format(total_errors_aov$DFn, digits = 2)`,`r format(total_errors_aov$DFd, digits = 2)`)~ = `r format(total_errors_aov$F, digits = 2)`, *p* `r format.p(total_errors_aov$p, digits = 2)`, $\eta^2_G$ = `r format(total_errors_aov$ges, digits = 2)`; @fig-total-errors).
+
+<!-- The total errors made were assessed with linear models.  -->
+<!-- The model with an effect of genotype best explained the data (@tbl-total-errors-models),  -->
+<!-- this model differed significantly from the null model (*F*~`r format(total_errors_aov$df[2], digits = 2)`~ = `r format(total_errors_aov$statistic[2], digits = 2)`, *p* `r format.p(total_errors_aov$p.value[2])`; @fig-total-errors). -->
 
 ```{r}
 #| label: fig-total-errors
@@ -866,30 +962,39 @@ Due to mice dying, only `r retest_table$n[2]` `r retest_table$geno[2]` and `r re
 The retest occurred between `r format(min(retest_dat$retest_days), digits = 2)` and `r format(max(retest_dat$retest_days), digits = 2)` days after the final reversal. There was no difference between between the days until the retest for the B6129 (`r format(retest_summary$days_mean[2], digits = 2)` ± `r format(retest_summary$days_sd[2], digits = 2)`) and 3xTg-AD (`r format(retest_summary$days_mean[1], digits = 2)` ± `r format(retest_summary$days_sd[1], digits = 2)`; *t*~`r format(retest_date_t_test$df, digits = 2)`~ = `r format(retest_date_t_test$statistic, digits = 2)`, *p* `r format.p(retest_date_t_test$p)`).
 
 ```{r}
+retest_aov <- retest_dat %>% 
+    ungroup() %>% 
+    anova_test(errors ~ geno)
+```
+
+An ANOVA was used to assess the number of errors made during the retest. 
+There was no significant effect of genotype ((*F*~(`r format(retest_aov$DFn, digits = 2)`,`r format(retest_aov$DFd, digits = 2)`)~ = `r format(retest_aov$F, digits = 2)`, *p* `r format.p(retest_aov$p, digits = 2)`, $\eta^2_G$ = `r format(retest_aov$ges, digits = 2)`; @fig-retest-errors)
+
+```{r}
 #| label: tbl-retest-errors-models
 #| tbl-cap: "AICc model table for retest errors."
 #### Retest ---------------------------------------------------------
 
-retest_mf <- lm(errors ~ geno,
-                data = retest_dat)
-
-retest_model_table <- dredge(retest_mf)
-
-attr(retest_model_table$weight, 'model.weights') <- NULL
-
-retest_model_table %>% 
-    mutate(weight = round(weight, 2)) %>% 
-    select(-`(Intercept)`) %>% 
-    kable(digits = 2,
-          row.names = FALSE,
-          booktabs = TRUE,
-          linesep = "")
+# retest_mf <- lm(errors ~ geno,
+#                 data = retest_dat)
+# 
+# retest_model_table <- dredge(retest_mf)
+# 
+# attr(retest_model_table$weight, 'model.weights') <- NULL
+# 
+# retest_model_table %>% 
+#     mutate(weight = round(weight, 2)) %>% 
+#     select(-`(Intercept)`) %>% 
+#     kable(digits = 2,
+#           row.names = FALSE,
+#           booktabs = TRUE,
+#           linesep = "")
 
 ```
 
-The number of errors made during the retest was assessed with linear maodels. 
-The null model best explained the data for the number of errors made during the retest (@tbl-retest-errors-models), 
-indicating no significant effects of genotype nor sex (@fig-retest-errors).
+<!-- The number of errors made during the retest was assessed with linear maodels.  -->
+<!-- The null model best explained the data for the number of errors made during the retest (@tbl-retest-errors-models),  -->
+<!-- indicating no significant effects of genotype nor sex (@fig-retest-errors). -->
 
 ```{r}
 retest_vs_18_t_test <- retest_dat %>% 
@@ -926,12 +1031,14 @@ The mean number of errors made during the retest (`r format(retest_vs_18_summary
 
 retest_dat %>% 
     ggplot(aes(x = geno,
-               y = errors)) +
+               y = errors,
+               fill = geno)) +
     geom_boxplot(outlier.shape = NA) +
     geom_dotplot(binaxis = "y", 
                stackdir = "center",
                fill = NA) +
     theme_classic() +
+    theme(legend.position = "none") +
     labs(y = "Errors",
          x = "Genotype")
 
@@ -961,8 +1068,8 @@ retest_dat %>%
 ```
 
 Pearson correlations were used to compare the number of errors made on the retest to the age of the mice for each genotype (@fig-retest-corr). 
-The correlations were not significant for either the B6129 (*r* = `r format(retest_corr_test$cor[2], digits = 2)`, *p* `r format.p(retest_corr_test$p[2])`), 
-nor the 3xTg-AD (*r* = `r format(retest_corr_test$cor[1], digits = 2)`, *p* `r format.p(retest_corr_test$p[1])`) mice.
+The correlations was not significant for the B6129 (*r* = `r format(retest_corr_test$cor[2], digits = 2)`, *p* `r format.p(retest_corr_test$p[2])`), 
+but was for the 3xTg-AD (*r* = `r format(retest_corr_test$cor[1], digits = 2)`, *p* `r format.p(retest_corr_test$p[1])`) mice.
 
 ## Time from last test effect
 
@@ -971,12 +1078,13 @@ nor the 3xTg-AD (*r* = `r format(retest_corr_test$cor[1], digits = 2)`, *p* `r f
 #| fig-cap: "Correlation between days after last reversal and errors made on the retest."
 
 retest_days_corr_test <- retest_dat %>% 
-    # group_by(geno) %>%
+    group_by(geno) %>%
     cor_test(errors, retest_days)
 
 retest_dat %>% 
     ggplot(aes(x = retest_days,
-               y = errors)) +
+               y = errors,
+               colour = geno)) +
     geom_point() +
     geom_smooth(method = "lm") + 
     theme_classic() +
@@ -986,4 +1094,5 @@ retest_dat %>%
 ```
 
 Pearson correlations were used to compare the number of errors made on the retest to the days since the final reversal (@fig-retest-delay-corr). 
-There was a significant, positive correlations (*r* = `r format(retest_days_corr_test$cor, digits = 2)`, *p* `r format.p(retest_days_corr_test$p)`).
+There was a significant, positive correlation for the B6129 mice (*r* = `r format(retest_days_corr_test$cor[2], digits = 2)`, *p* `r format.p(retest_days_corr_test$p[2])`), 
+but not for the 3xTg-AD mice (*r* = `r format(retest_days_corr_test$cor[1], digits = 2)`, *p* `r format.p(retest_days_corr_test$p[1])`).
