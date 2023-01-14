@@ -338,8 +338,8 @@ disc_dat %>%
     ggplot(aes(x = op,
                y = errors,
                colour = geno)) +
-    geom_point(alpha = .2,
-               shape = 20) + 
+    # geom_point(alpha = .2,
+    #            shape = 20) + 
     stat_summary(fun.data = "mean_cl_boot") +
     geom_smooth(se = FALSE) +
     theme_classic() +
@@ -358,43 +358,91 @@ disc_dat %>%
 
 # Discrimination
 
-disc_fm <- lmer(errors ~ op * geno + (1|animal),
-                data = disc_dat,
-                REML = FALSE)
-
-disc_model_table <- dredge(disc_fm)
-
-disc_best_model <- get.models(disc_model_table,
-                              subset = delta == 0)[[1]]
-
-disc_null_model <- lmer(errors ~ (1|animal),
-                        data = disc_dat,
-                        REML = FALSE)
-
-disc_aov <- anova(disc_best_model, disc_null_model) %>% tidy()
-
-attr(disc_model_table$weight, 'model.weights') <- NULL
-
-disc_model_table %>% 
-    mutate(weight = round(weight, 2)) %>% 
-    select(-`(Intercept)`) %>% 
-    kable(digits = 2,
-          row.names = FALSE,
-          booktabs = TRUE,
-          linesep = "")
-    # kable_styling(latex_options = c("scale_down"))
+# disc_fm <- lmer(errors ~ op * geno + (1|animal),
+#                 data = disc_dat,
+#                 REML = FALSE)
+# 
+# disc_model_table <- dredge(disc_fm)
+# 
+# disc_best_model <- get.models(disc_model_table,
+#                               subset = delta == 0)[[1]]
+# 
+# disc_null_model <- lmer(errors ~ (1|animal),
+#                         data = disc_dat,
+#                         REML = FALSE)
+# 
+# disc_aov <- anova(disc_best_model, disc_null_model) %>% tidy()
+# 
+# attr(disc_model_table$weight, 'model.weights') <- NULL
+# 
+# disc_model_table %>% 
+#     mutate(weight = round(weight, 2)) %>% 
+#     select(-`(Intercept)`) %>% 
+#     kable(digits = 2,
+#           row.names = FALSE,
+#           booktabs = TRUE,
+#           linesep = "")
+#     # kable_styling(latex_options = c("scale_down"))
 ```
 
-The discrimination trials were assessed with linear mixed effects models on the number of errors made on each odour pair. 
-The errors made decreased as the mice advanced through the odour pairs (@fig-disc). 
-The  model with just an effect of odour pair best explained the data (@tbl-disc-models), 
-this model differed from the null model ($\chi$^2^~`r format(disc_aov$df[2], digits = 2)`~ = `r format(disc_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_aov$p.value[2])`).
+<!-- The discrimination trials were assessed with linear mixed effects models on the number of errors made on each odour pair.  -->
+<!-- The errors made decreased as the mice advanced through the odour pairs (@fig-disc).  -->
+<!-- The  model with just an effect of odour pair best explained the data (@tbl-disc-models),  -->
+<!-- this model differed from the null model ($\chi$^2^~`r format(disc_aov$df[2], digits = 2)`~ = `r format(disc_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_aov$p.value[2])`). -->
+
+```{r}
+disc_first_third_aov <- disc_dat %>% 
+    filter(op < 7) %>% 
+    ungroup() %>% 
+    anova_test(dv = errors,
+               between = geno,
+               wid = animal,
+               within = op) %>% 
+    get_anova_table()
+
+disc_first_third_ph <- disc_dat %>% 
+    filter(op < 7) %>% 
+    ungroup() %>%
+    tukey_hsd(errors ~ as.factor(op))
+
+disc_second_third_aov <- disc_dat %>% 
+    filter(op >= 7,
+           op < 13) %>% 
+    ungroup() %>% 
+    anova_test(dv = errors,
+               between = geno,
+               wid = animal,
+               within = op) %>% 
+    get_anova_table()
+
+disc_last_third_aov <- disc_dat %>% 
+    filter(op <= 13) %>% 
+    ungroup() %>% 
+    anova_test(dv = errors,
+               between = geno,
+               wid = animal,
+               within = op) %>% 
+    get_anova_table()
+```
+
+The sequence of odour pairs was divided into thirds, and ANOVAs examining the  the errors on the discrimination trials were run on each third.
+Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
+
+In the first third of trials there was a significant effect of odour pair (*F*~(`r format(disc_first_third_aov$DFn[2], digits = 2)`,`r format(disc_first_third_aov$DFd[2], digits = 2)`)~ = `r format(disc_first_third_aov$F[2], digits = 2)`, *p* `r format.p(disc_first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(disc_first_third_aov$ges[2], digits = 2)`), 
+but no effect of genotype (*F*~(`r format(disc_first_third_aov$DFn[1], digits = 2)`,`r format(disc_first_third_aov$DFd[1], digits = 2)`)~ = `r format(disc_first_third_aov$F[1], digits = 2)`, *p* `r format.p(disc_first_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(disc_first_third_aov$ges[1], digits = 2)`), 
+nor an interaction (*F*~(`r format(disc_first_third_aov$DFn[3], digits = 2)`,`r format(disc_first_third_aov$DFd[3], digits = 2)`)~ = `r format(disc_first_third_aov$F[3], digits = 2)`, *p* `r format.p(disc_first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(disc_first_third_aov$ges[3], digits = 2)`).
+
+In the second third of trials there were no significant effects (*p*'s >=`r format(min(disc_second_third_aov$p), digits = 2)`).
+
+In the last third of trials there was a significant effect of odour pair (*F*~(`r format(disc_last_third_aov$DFn[2], digits = 2)`,`r format(disc_last_third_aov$DFd[2], digits = 2)`)~ = `r format(disc_last_third_aov$F[2], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[2], digits = 2)`), 
+but no effect of genotype (*F*~(`r format(disc_last_third_aov$DFn[1], digits = 2)`,`r format(disc_last_third_aov$DFd[1], digits = 2)`)~ = `r format(disc_last_third_aov$F[1], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[1], digits = 2)`), 
+nor an interaction (*F*~(`r format(disc_last_third_aov$DFn[3], digits = 2)`,`r format(disc_last_third_aov$DFd[3], digits = 2)`)~ = `r format(disc_last_third_aov$F[3], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[3], digits = 2)`).
 
 ## Near errorless learning
 
 ```{r}
-#| label: tbl-disc-errorless-models
-#| tbl-cap: "AICc model table for near errorless learning during discrimination."
+#| label: fig-disc-errorless
+#| fig-cap: "Number of mice showing errorless learning on each odour pair during discrimination."
 
 disc_1_error <- disc_dat %>% 
     filter(errors == 1)
@@ -418,58 +466,93 @@ disc_best_geno <- geno$geno[geno$mouse == disc_best_mouse]
 disc_errorless_dat <- disc_dat %>% 
     mutate(errorless = errors <= 1)
 
-disc_errorless_mf <- glmer(errorless ~ geno + (1|animal),
-                           data = disc_errorless_dat,
-                           family = "binomial")
+disc_errorless_dat %>% 
+    filter(errorless) %>% 
+    group_by(geno, op) %>% 
+    count() %>%
+    ungroup() %>% 
+    complete(geno = levels(dat$geno),
+             op = 1:18,
+             fill = list(n = 0)) %>% 
+    ggplot(aes(x = op,
+               y = n,
+               colour = geno)) +
+    geom_point(position = position_dodge(width = .33)) +
+    theme_classic() +
+    labs(x = "Odour pair",
+         y = "Number of mice with 0 or 1 errors")  +
+    theme(legend.title = element_blank(),
+          legend.position = c(.1, .9))
+```
 
-disc_errorless_model_table <- dredge(disc_errorless_mf)
+```{r}
+disc_errorless_chi_op <- tabyl(disc_errorless_dat, op, errorless) %>%
+    chisq.test()
 
-disc_errorless_best_model <- get.models(disc_errorless_model_table,
-                                        subset = delta == 0)[[1]]
+disc_errorless_chi_geno <- tabyl(disc_errorless_dat, geno, errorless) %>%
+    chisq.test()
+```
 
-disc_errorless_null_model <- glmer(errorless ~ 1 + (1|animal),
-                                   data = disc_errorless_dat,
-                                   family = "binomial")
+```{r}
+#| label: tbl-disc-errorless-models
+#| tbl-cap: "AICc model table for near errorless learning during discrimination."
 
-disc_errorless_aov <- anova(disc_errorless_best_model, 
-                            disc_errorless_null_model) %>% 
-    tidy()
-
-attr(disc_errorless_model_table$weight, 'model.weights') <- NULL
-
-disc_errorless_model_table %>% 
-    mutate(weight = round(weight, 2)) %>% 
-    select(-`(Intercept)`) %>% 
-    kable(digits = 2,
-          row.names = FALSE,
-          booktabs = TRUE,
-          linesep = "")
+# disc_errorless_mf <- glmer(errorless ~ geno + (1|animal),
+#                            data = disc_errorless_dat,
+#                            family = "binomial")
+# 
+# disc_errorless_model_table <- dredge(disc_errorless_mf)
+# 
+# disc_errorless_best_model <- get.models(disc_errorless_model_table,
+#                                         subset = delta == 0)[[1]]
+# 
+# disc_errorless_null_model <- glmer(errorless ~ 1 + (1|animal),
+#                                    data = disc_errorless_dat,
+#                                    family = "binomial")
+# 
+# disc_errorless_aov <- anova(disc_errorless_best_model, 
+#                             disc_errorless_null_model) %>% 
+#     tidy()
+# 
+# attr(disc_errorless_model_table$weight, 'model.weights') <- NULL
+# 
+# disc_errorless_model_table %>% 
+#     mutate(weight = round(weight, 2)) %>% 
+#     select(-`(Intercept)`) %>% 
+#     kable(digits = 2,
+#           row.names = FALSE,
+#           booktabs = TRUE,
+#           linesep = "")
 
 ```
 
 ```{r}
-disc_second_half <- disc_dat %>% 
-    filter(op >= 10) %>% 
-    group_by(geno) %>% 
-    summarise(errors_mean = mean(errors),
-              errors_sd = sd(errors))
-
-disc_second_half_t_test <- disc_dat %>%
-    filter(op >= 10) %>%
-    ungroup() %>%
-    t_test(errors ~ geno)
+# disc_second_half <- disc_dat %>% 
+#     filter(op >= 10) %>% 
+#     group_by(geno) %>% 
+#     summarise(errors_mean = mean(errors),
+#               errors_sd = sd(errors))
+# 
+# disc_second_half_t_test <- disc_dat %>%
+#     filter(op >= 10) %>%
+#     ungroup() %>%
+#     t_test(errors ~ geno)
 ```
 
-There were `r disc_1_error %>% nrow()` instances of mice making a single error on the initial discrimination of the odour pair, and `r disc_0_error %>% nrow()` instance of a mouse making zero errors. 
+There were `r disc_1_error %>% nrow()` instances of mice making a single error on the initial discrimination of the odour pair, and `r disc_0_error %>% nrow()` instance of a mouse making zero errors (@fig-disc-errorless). 
 With `r disc_errorless_table %>% length()` mice passing at least one discrimination with just one or zero errors.
 One mouse, a `r disc_best_geno`, had one or fewer errors on the initial discrimination of `r disc_errorless_table %>% max()` odour pairs.
 
-During the second half of the experiment, odour pairs 10 through 18, the B6129 made an average of `r format(disc_second_half$errors_mean[2], digits = 2)` ± `r format(disc_second_half$errors_sd[2], digits = 2)` errors, 
-while the 3xTg-AD mice made `r format(disc_second_half$errors_mean[1], digits = 2)` ± `r format(disc_second_half$errors_sd[1], digits = 2)` errors.
-This difference was not significant (*t*~`r format(disc_second_half_t_test$df, digits = 2)`~ = `r format(disc_second_half_t_test$statistic, digits = 2)`, *p* `r format.p(disc_second_half_t_test$p)`).
+Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorsless learning. 
+The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(disc_errorless_chi_op$parameter, digits = 2)~` = `r format(disc_errorless_chi_op$statistic, digits = 2)`, *p* `r `format.p(disc_errorless_chi_op$p.value)`),
+while the $\chi^2$ on the effect of genotype was not ($\chi^2$~`r format(disc_errorless_chi_geno$parameter, digits = 2)~` = `r format(disc_errorless_chi_geno$statistic, digits = 2)`, *p* `r `format.p(disc_errorless_chi_geno$p.value)`).
 
-Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair. 
-The model with an effect of genotype best explained the data (@tbl-disc-errorless-models), but did not differ from the null model ($\chi$^2^~`r format(disc_errorless_aov$df[2], digits = 2)`~ = `r format(disc_errorless_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_errorless_aov$p.value[2])`).
+<!-- During the second half of the experiment, odour pairs 10 through 18, the B6129 made an average of `r format(disc_second_half$errors_mean[2], digits = 2)` ± `r format(disc_second_half$errors_sd[2], digits = 2)` errors,  -->
+<!-- while the 3xTg-AD mice made `r format(disc_second_half$errors_mean[1], digits = 2)` ± `r format(disc_second_half$errors_sd[1], digits = 2)` errors. -->
+<!-- This difference was not significant (*t*~`r format(disc_second_half_t_test$df, digits = 2)`~ = `r format(disc_second_half_t_test$statistic, digits = 2)`, *p* `r format.p(disc_second_half_t_test$p)`). -->
+
+<!-- Generalized linear mixed effects models were used to examine the proportion of mice making one or zero errors on each odour pair.  -->
+<!-- The model with an effect of genotype best explained the data (@tbl-disc-errorless-models), but did not differ from the null model ($\chi$^2^~`r format(disc_errorless_aov$df[2], digits = 2)`~ = `r format(disc_errorless_aov$statistic[2], digits = 2)`, *p* `r format.p(disc_errorless_aov$p.value[2])`). -->
 
 ## Age effects
 
