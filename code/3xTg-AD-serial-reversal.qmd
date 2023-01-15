@@ -128,8 +128,10 @@ dat <- bind_rows(manual_data, auto_data) %>%
            op = case_when(
                op %in% 0:18 ~ as.numeric(op)
            ),
+           op_n = op,
            rev = as.factor(rev),
-           retest = as.factor(retest)) %>% 
+           retest = as.factor(retest),
+           op = as.factor(op)) %>% 
     left_join(geno,
               by = c("animal" = "mouse")) %>% 
     ungroup()
@@ -140,8 +142,8 @@ dat <- bind_rows(manual_data, auto_data) %>%
 #### Check for incomplete data ------------------------------------
 incomplete_mice <- dat %>% 
     group_by(animal, rev, retest) %>% 
-    summarise(max_op = max(op),
-              min_op = min(op)) %>% 
+    summarise(max_op = max(op_n),
+              min_op = min(op_n)) %>% 
     filter(max_op != 18, retest == FALSE) %>% 
     pull(animal) %>% 
     unique()
@@ -227,30 +229,31 @@ The B6129 mice (`r format(training_summary$errors_mean[2], digits = 2)` ± `r fo
 
 overall_dat <- dat %>% 
     filter(retest == FALSE,
-           op > 0) %>% 
-    pivot_wider(id_cols = c(animal, op, geno),
+           op_n > 0) %>% 
+    pivot_wider(id_cols = c(animal, op, op_n, geno),
                 names_from = rev,
                 values_from = errors) %>% 
     select(animal,
            op,
+           op_n,
            geno,
            disc = `FALSE`,
            rev = `TRUE`)
 
 overall_dat %>% 
     ggplot(aes(y = disc,
-               x = op,
+               x = op_n,
                colour = geno)) +
     stat_summary(fun.data = "mean_cl_boot") +
     stat_summary(aes(y = rev,
-                     x = op + .33),
+                     x = op_n + .33),
                  shape = 1,
                  fun.data = "mean_cl_boot") +
     geom_segment(data = overall_dat %>% 
                      group_by(op, geno) %>% 
-                     summarise(x = mean(op),
+                     summarise(x = mean(op_n),
                                y = mean(disc, na.rm = TRUE),
-                               xend = mean(op) + .33,
+                               xend = mean(op_n) + .33,
                                yend = mean(rev, na.rm = TRUE)),
                  aes(x = x, y = y, xend = xend, yend = yend),
                  colour = "black") +
@@ -276,7 +279,7 @@ overall_diffs_summary <- overall_diffs %>%
                      .names = "{.col}_{.fn}"))
 
 first_third_aov <- overall_diffs %>% 
-    filter(op < 7,
+    filter(op_n < 7,
            !is.na(diff_score)) %>% 
     ungroup() %>% 
     anova_test(dv = diff_score,
@@ -286,14 +289,14 @@ first_third_aov <- overall_diffs %>%
     get_anova_table()
 
 first_third_ph <- overall_diffs %>% 
-    filter(op < 7,
+    filter(op_n < 7,
            !is.na(diff_score)) %>% 
     group_by(op) %>% 
     tukey_hsd(diff_score ~ geno)
 
 second_third_aov <- overall_diffs %>% 
-    filter(op >= 7,
-           op < 13,
+    filter(op_n >= 7,
+           op_n < 13,
            !is.na(diff_score)) %>% 
     ungroup() %>% 
     anova_test(dv = diff_score,
@@ -303,7 +306,7 @@ second_third_aov <- overall_diffs %>%
     get_anova_table()
 
 last_third_aov <- overall_diffs %>% 
-    filter(op > 12,
+    filter(op_n > 12,
            !is.na(diff_score)) %>% 
     ungroup() %>% 
     anova_test(dv = diff_score,
@@ -332,10 +335,10 @@ On the second and last thirds there were no significant effects (*p*'s >= `r for
 disc_dat <- dat %>% 
     filter(retest == FALSE, 
            rev == FALSE,
-           op > 0)
+           op_n > 0)
 
 disc_dat %>% 
-    ggplot(aes(x = op,
+    ggplot(aes(x = op_n,
                y = errors,
                colour = geno)) +
     # geom_point(alpha = .2,
@@ -387,7 +390,7 @@ disc_dat %>%
 
 ```{r}
 disc_first_third_aov <- disc_dat %>% 
-    filter(op < 7) %>% 
+    filter(op_n < 7) %>% 
     ungroup() %>% 
     anova_test(dv = errors,
                between = geno,
@@ -396,13 +399,13 @@ disc_first_third_aov <- disc_dat %>%
     get_anova_table()
 
 disc_first_third_ph <- disc_dat %>% 
-    filter(op < 7) %>% 
+    filter(op_n < 7) %>% 
     ungroup() %>%
     tukey_hsd(errors ~ as.factor(op))
 
 disc_second_third_aov <- disc_dat %>% 
-    filter(op >= 7,
-           op < 13) %>% 
+    filter(op_n >= 7,
+           op_n < 13) %>% 
     ungroup() %>% 
     anova_test(dv = errors,
                between = geno,
@@ -411,7 +414,7 @@ disc_second_third_aov <- disc_dat %>%
     get_anova_table()
 
 disc_last_third_aov <- disc_dat %>% 
-    filter(op >= 13) %>% 
+    filter(op_n >= 13) %>% 
     ungroup() %>% 
     anova_test(dv = errors,
                between = geno,
@@ -463,13 +466,13 @@ disc_errorless_dat <- disc_dat %>%
 
 disc_errorless_dat %>% 
     filter(errorless) %>% 
-    group_by(geno, op) %>% 
+    group_by(geno, op, op_n) %>% 
     count() %>%
     ungroup() %>% 
     complete(geno = levels(dat$geno),
-             op = 1:18,
+             op_n = 1:18,
              fill = list(n = 0)) %>% 
-    ggplot(aes(x = op,
+    ggplot(aes(x = op_n,
                y = n,
                colour = geno)) +
     geom_point(position = position_dodge(width = .33)) +
@@ -481,7 +484,7 @@ disc_errorless_dat %>%
 ```
 
 ```{r}
-disc_errorless_chi_op <- tabyl(disc_errorless_dat, op, errorless) %>%
+disc_errorless_chi_op <- tabyl(disc_errorless_dat, op_n, errorless) %>%
     chisq.test()
 
 disc_errorless_chi_geno <- tabyl(disc_errorless_dat, geno, errorless) %>%
@@ -538,7 +541,7 @@ There were `r disc_1_error %>% nrow()` instances of mice making a single error o
 With `r disc_errorless_table %>% length()` mice passing at least one discrimination with just one or zero errors.
 One mouse, a `r disc_best_geno`, had one or fewer errors on the initial discrimination of `r disc_errorless_table %>% max()` odour pairs.
 
-Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorsless learning. 
+Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorless learning. 
 The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(disc_errorless_chi_op$parameter, digits = 2)`~ = `r format(disc_errorless_chi_op$statistic, digits = 2)`, *p* `r format.p(disc_errorless_chi_op$p.value)`),
 while the $\chi^2$ on the effect of genotype was not ($\chi^2$~`r format(disc_errorless_chi_geno$parameter, digits = 2)`~ = `r format(disc_errorless_chi_geno$statistic, digits = 2)`, *p* `r format.p(disc_errorless_chi_geno$p.value)`).
 
@@ -566,7 +569,7 @@ disc_dat %>%
          y = "Errors")
 ```
 
-Pearson correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
+Pearson's correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
 The correlations were not significant for either the B6129 (*r* = `r format(disc_corr_test$cor[2], digits = 2)`, *p* `r format.p(disc_corr_test$p[2])`), 
 nor the 3xTg-AD (*r* = `r format(disc_corr_test$cor[1], digits = 2)`, *p* `r format.p(disc_corr_test$p[1])`) mice.
 {{< pagebreak >}}
@@ -581,7 +584,7 @@ rev_dat <- dat %>%
            rev == TRUE)
 
 rev_dat %>% 
-    ggplot(aes(x = op,
+    ggplot(aes(x = op_n,
                y = errors,
                colour = geno)) +
     # geom_point(alpha = .2,
@@ -631,7 +634,7 @@ rev_dat %>%
 ```{r}
 
 rev_first_third_aov <- rev_dat %>% 
-    filter(op < 7) %>% 
+    filter(op_n < 7) %>% 
     ungroup() %>% 
     anova_test(dv = errors,
                between = geno,
@@ -640,13 +643,13 @@ rev_first_third_aov <- rev_dat %>%
     get_anova_table()
 
 rev_first_third_ph <- rev_dat %>% 
-    filter(op < 7) %>% 
+    filter(op_n < 7) %>% 
     group_by(op) %>%
     tukey_hsd(errors ~ geno)
 
 rev_second_third_aov <- rev_dat %>% 
-    filter(op >= 7,
-           op < 13) %>% 
+    filter(op_n >= 7,
+           op_n < 13) %>% 
     ungroup() %>% 
     anova_test(dv = errors,
                between = geno,
@@ -655,7 +658,7 @@ rev_second_third_aov <- rev_dat %>%
     get_anova_table()
 
 rev_last_third_aov <- rev_dat %>% 
-    filter(op >= 13) %>% 
+    filter(op_n >= 13) %>% 
     ungroup() %>% 
     anova_test(dv = errors,
                between = geno,
@@ -664,7 +667,7 @@ rev_last_third_aov <- rev_dat %>%
     get_anova_table()
 
 rev_last_third_ph <- rev_dat %>% 
-    filter(op >= 13) %>% 
+    filter(op_n >= 13) %>% 
     group_by(op) %>%
     tukey_hsd(errors ~ geno)
 ```
@@ -676,7 +679,7 @@ In the first third of trials there were significant effects of odour pair (*F*~(
 and of genotype (*F*~(`r format(rev_first_third_aov$DFn[1], digits = 2)`,`r format(rev_first_third_aov$DFd[1], digits = 2)`)~ = `r format(rev_first_third_aov$F[1], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[1], digits = 2)`), 
 but no interaction (*F*~(`r format(rev_first_third_aov$DFn[3], digits = 2)`,`r format(rev_first_third_aov$DFd[3], digits = 2)`)~ = `r format(rev_first_third_aov$F[3], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[3], digits = 2)`).
 
-Post hoc Tukey HSD tests found that there were significant genotype differences on odour pairs 2 (adjusted *p* `r format.p(rev_first_third_ph$p.adj[2])`) and 6 (adjusted *p* `r format.p(rev_first_third_ph$p.adj[6])`).
+Post hoc Tukey HSD tests found that there were significant genotype differences on odour pairs two (adjusted *p* `r format.p(rev_first_third_ph$p.adj[2])`) and six (adjusted *p* `r format.p(rev_first_third_ph$p.adj[6])`).
 
 There were no significant effects in the second or last thirds of trials (*p*'s >= `r format(min(c(rev_second_third_aov$p,rev_last_third_aov$p), digits = 2))`).
 
@@ -710,13 +713,13 @@ rev_errorless_dat <- rev_dat %>%
 
 rev_errorless_dat %>% 
     filter(errorless) %>% 
-    group_by(geno, op) %>% 
+    group_by(geno, op_n) %>% 
     count() %>%
     ungroup() %>% 
     complete(geno = levels(dat$geno),
-             op = 1:18,
+             op_n = 1:18,
              fill = list(n = 0)) %>% 
-    ggplot(aes(x = op,
+    ggplot(aes(x = op_n,
                y = n,
                colour = geno)) +
     geom_point(position = position_dodge(width = .33)) +
@@ -728,7 +731,7 @@ rev_errorless_dat %>%
 ```
 
 ```{r}
-rev_errorless_chi_op <- tabyl(rev_errorless_dat, op, errorless) %>%
+rev_errorless_chi_op <- tabyl(rev_errorless_dat, op_n, errorless) %>%
     chisq.test()
 
 rev_errorless_chi_geno <- tabyl(rev_errorless_dat, geno, errorless) %>%
@@ -814,7 +817,7 @@ rev_dat %>%
          y = "Errors")
 ```
 
-Pearson correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
+Pearson's correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
 The correlations were not significant for either the B6129 (*r* = `r format(rev_corr_test$cor[2], digits = 2)`, *p* `r format.p(rev_corr_test$p[2])`), 
 nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* `r format.p(rev_corr_test$p[1])`) mice.
 {{< pagebreak >}}
@@ -827,7 +830,7 @@ nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* `r form
 
 total_errors_dat <- dat %>% 
     filter(retest == FALSE,
-           op > 0) %>% 
+           op_n > 0) %>% 
     group_by(animal, geno, days) %>% 
     summarise(total_errors = sum(errors))
 
