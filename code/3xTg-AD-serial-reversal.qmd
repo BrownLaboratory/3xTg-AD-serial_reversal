@@ -136,21 +136,20 @@ dat <- bind_rows(manual_data, auto_data) %>%
               by = c("animal" = "mouse")) %>% 
     ungroup()
 
-```
+# # check for missing data
+# dat %>% 
+#     ungroup() %>% 
+#     complete(animal = unique(dat$animal),
+#              op = as.factor(0:18),
+#              rev = as.factor(c(TRUE, FALSE))) %>% 
+#     filter(!(op == 0 & rev == TRUE),
+#            !(animal %in% c(1871, 1967)),
+#            is.na(errors)) %>% 
+#     left_join(geno,
+#               by = c("animal" = "mouse")) %>% 
+#     select(animal:rev, start.y) %>% 
+#     View()
 
-```{r}
-#### Check for incomplete data ------------------------------------
-incomplete_mice <- dat %>% 
-    group_by(animal, rev, retest) %>% 
-    summarise(max_op = max(op_n),
-              min_op = min(op_n)) %>% 
-    filter(max_op != 18, retest == FALSE) %>% 
-    pull(animal) %>% 
-    unique()
-
-# Drop mice with incomplete data mice
-dat <- dat %>% 
-    filter(!(animal %in% incomplete_mice))
 ```
 
 # Subjects
@@ -161,7 +160,7 @@ dat <- dat %>%
 
 #### Demographics ---------------------------------------------
 geno %>% 
-    filter(!(mouse %in% incomplete_mice)) %>% 
+    filter(mouse %in% dat$animal) %>% 
     group_by(geno, sex) %>% 
     summarise(mean_age = mean(days),
               min_age = min(days),
@@ -175,15 +174,21 @@ geno %>%
         linesep = "")
 
 t_test_age <- geno %>% 
-    filter(!(mouse %in% incomplete_mice)) %>%
+    filter(mouse %in% dat$animal) %>%
     ungroup() %>% 
     t_test(days ~ geno)
+
+age_table <- geno %>% 
+    filter(mouse %in% dat$animal) %>% 
+    group_by(geno) %>% 
+    summarise(age_mean = mean(days),
+              age_sd = sd(days))
 
 ```
 
 Due to the small number of male mice, sexes are lumped together in this analysis.
 There are `r dat %>% pull(animal) %>% unique() %>% length()` mice included in this study. 
-There was no significant difference in age between the 3xTg-AD and B6129 mice (*t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`; @tbl-subjects).
+The 3xTg-AD mice (`r format(age_table$age_mean[1], digits = 2)` ± `r format(age_table$age_sd[1], digits = 2)` days) were significantly younger than the B6129 mice (`r format(age_table$age_mean[2], digits = 2)` ± `r format(age_table$age_sd[2], digits = 2)` days; *t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`; @tbl-subjects).
 
 # Training
 
@@ -320,10 +325,14 @@ The sequence of odour pairs was divided into thirds, and ANOVAs examining the di
 Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
 
 In the first third of odour pairs, there were significant effects of genotype (*F*~(`r format(first_third_aov$DFn[1], digits = 2)`,`r format(first_third_aov$DFd[1], digits = 2)`)~ = `r format(first_third_aov$F[1], digits = 2)`, *p* `r format.p(first_third_aov$p[1], digits = 2)`, , $\eta^2_G$ = `r format(first_third_aov$ges[1], digits = 2)`) and odour pair (*F*~(`r format(first_third_aov$DFn[2], digits = 2)`,`r format(first_third_aov$DFd[2], digits = 2)`)~ = `r format(first_third_aov$F[2], digits = 2)`, *p* `r format.p(first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[2], digits = 2)`; @fig-overall).
-There was no significant interaction (*F*~(`r format(first_third_aov$DFn[3], digits = 2)`,`r format(first_third_aov$DFd[3], digits = 2)`)~ = `r format(first_third_aov$F[3], digits = 2)`, *p* `r format.p(first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[3], digits = 2)`)).
+There was no significant interaction (*F*~(`r format(first_third_aov$DFn[3], digits = 2)`,`r format(first_third_aov$DFd[3], digits = 2)`)~ = `r format(first_third_aov$F[3], digits = 2)`, *p* `r format.p(first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[3], digits = 2)`).
 Post-hoc Tukey HSD tests found that there was a significant difference between the B6129 and 3xTg-AD mice on the second odour pair (*p* `r format.p(first_third_ph$p.adj[2])`).
 
-On the second and last thirds there were no significant effects (*p*'s >= `r format(min(c(second_third_aov$p, last_third_aov$p)), digits = 2)`).
+On the second third there were no significant effects (*p*'s >= `r format(min(second_third_aov$p), digits = 2)`).
+
+On the last third there was a significant effect of genotype (*F*~(`r format(last_third_aov$DFn[1], digits = 2)`,`r format(last_third_aov$DFd[1], digits = 2)`)~ = `r format(last_third_aov$F[1], digits = 2)`, *p* `r format.p(last_third_aov$p[1], digits = 2)`, , $\eta^2_G$ = `r format(last_third_aov$ges[1], digits = 2)`), 
+but no effect of odour pair (*F*~(`r format(last_third_aov$DFn[2], digits = 2)`,`r format(last_third_aov$DFd[2], digits = 2)`)~ = `r format(last_third_aov$F[2], digits = 2)`, *p* `r format.p(last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[2], digits = 2)`), 
+nor an interaction (*F*~(`r format(last_third_aov$DFn[3], digits = 2)`,`r format(last_third_aov$DFd[3], digits = 2)`)~ = `r format(last_third_aov$F[3], digits = 2)`, *p* `r format.p(last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[3], digits = 2)`).
 
 
 # Discrimination
@@ -679,7 +688,7 @@ In the first third of trials there were significant effects of odour pair (*F*~(
 and of genotype (*F*~(`r format(rev_first_third_aov$DFn[1], digits = 2)`,`r format(rev_first_third_aov$DFd[1], digits = 2)`)~ = `r format(rev_first_third_aov$F[1], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[1], digits = 2)`), 
 but no interaction (*F*~(`r format(rev_first_third_aov$DFn[3], digits = 2)`,`r format(rev_first_third_aov$DFd[3], digits = 2)`)~ = `r format(rev_first_third_aov$F[3], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[3], digits = 2)`).
 
-Post hoc Tukey HSD tests found that there were significant genotype differences on odour pairs two (adjusted *p* `r format.p(rev_first_third_ph$p.adj[2])`) and six (adjusted *p* `r format.p(rev_first_third_ph$p.adj[6])`).
+Post hoc Tukey HSD tests found that there were significant genotype differences on odour pairs one (adjusted *p* `r format.p(rev_first_third_ph$p.adj[1])`), two (adjusted *p* `r format.p(rev_first_third_ph$p.adj[2])`), and six (adjusted *p* `r format.p(rev_first_third_ph$p.adj[6])`).
 
 There were no significant effects in the second or last thirds of trials (*p*'s >= `r format(min(c(rev_second_third_aov$p,rev_last_third_aov$p), digits = 2))`).
 
@@ -787,11 +796,11 @@ rev_errorless_chi_geno <- tabyl(rev_errorless_dat, geno, errorless) %>%
 
 There were `r rev_1_error %>% nrow()` instances of mice making a single error on the reversal of the odour pair, and `r rev_0_error %>% nrow()` instances of a mouse making zero errors (@fig-rev-errorless). 
 With `r rev_errorless_table %>% length()` mice passing at least one reversal with just one or zero errors.
-One mouse, the same `r rev_best_geno` mentioned in the discrimination, had one or fewer errors on the reversal of `r rev_errorless_table %>% max()` odour pairs.
+One mouse, a `r rev_best_geno`, had one or fewer errors on the reversal of `r rev_errorless_table %>% max()` odour pairs.
 
 Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorsless learning. 
 The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(rev_errorless_chi_op$parameter, digits = 2)`~ = `r format(rev_errorless_chi_op$statistic, digits = 2)`, *p* `r format.p(rev_errorless_chi_op$p.value)`),
-while the $\chi^2$ on the effect of genotype was not ($\chi^2$~`r format(rev_errorless_chi_geno$parameter, digits = 2)`~ = `r format(rev_errorless_chi_geno$statistic, digits = 2)`, *p* `r format.p(rev_errorless_chi_geno$p.value)`).
+as was the $\chi^2$ on the effect of genotype ($\chi^2$~`r format(rev_errorless_chi_geno$parameter, digits = 2)`~ = `r format(rev_errorless_chi_geno$statistic, digits = 2)`, *p* `r format.p(rev_errorless_chi_geno$p.value)`), with the 3xTg-AD mice having more errorless reversals than expected.
 
 ## Age effects
 
@@ -834,9 +843,9 @@ total_errors_dat <- dat %>%
     group_by(animal, geno, days) %>% 
     summarise(total_errors = sum(errors))
 
-total_errors_aov <- total_errors_dat %>% 
+total_errors_t <- total_errors_dat %>% 
     ungroup() %>% 
-    anova_test(total_errors ~ geno)
+    t_test(total_errors ~ geno)
 
 # total_errors_fm <- lm(total_errors ~ geno,
 #                       data = total_errors_dat)
@@ -865,8 +874,8 @@ total_errors_aov <- total_errors_dat %>%
 
 ```
 
-An ANOVA was used to assess the total errors made during the discrimination and reversal trials.
-There was a significant effect of genotype (*F*~(`r format(total_errors_aov$DFn, digits = 2)`,`r format(total_errors_aov$DFd, digits = 2)`)~ = `r format(total_errors_aov$F, digits = 2)`, *p* `r format.p(total_errors_aov$p, digits = 2)`, $\eta^2_G$ = `r format(total_errors_aov$ges, digits = 2)`; @fig-total-errors).
+A t-test was used to assess the total errors made during the discrimination and reversal trials.
+There was a significant effect of genotype (*t*~(`r format(total_errors_t$df, digits = 2)`)~ = `r format(total_errors_t$statistic, digits = 2)`, *p* `r format.p(total_errors_t$p, digits = 2)`; @fig-total-errors).
 
 ```{r}
 #| label: fig-total-errors
@@ -940,13 +949,13 @@ Due to mice dying, only `r retest_table$n[2]` `r retest_table$geno[2]` and `r re
 The retest occurred between `r format(min(retest_dat$retest_days), digits = 2)` and `r format(max(retest_dat$retest_days), digits = 2)` days after the final reversal. There was no difference between between the days until the retest for the B6129 (`r format(retest_summary$days_mean[2], digits = 2)` ± `r format(retest_summary$days_sd[2], digits = 2)`) and 3xTg-AD (`r format(retest_summary$days_mean[1], digits = 2)` ± `r format(retest_summary$days_sd[1], digits = 2)`; *t*~`r format(retest_date_t_test$df, digits = 2)`~ = `r format(retest_date_t_test$statistic, digits = 2)`, *p* `r format.p(retest_date_t_test$p)`).
 
 ```{r}
-retest_aov <- retest_dat %>% 
+retest_t <- retest_dat %>% 
     ungroup() %>% 
-    anova_test(errors ~ geno)
+    t_test(errors ~ geno)
 ```
 
-An ANOVA was used to assess the number of errors made during the retest. 
-There was no significant effect of genotype ((*F*~(`r format(retest_aov$DFn, digits = 2)`,`r format(retest_aov$DFd, digits = 2)`)~ = `r format(retest_aov$F, digits = 2)`, *p* `r format.p(retest_aov$p, digits = 2)`, $\eta^2_G$ = `r format(retest_aov$ges, digits = 2)`; @fig-retest-errors)
+A t-test was used to assess the number of errors made during the retest. 
+There was no significant effect of genotype (*t*~(`r format(retest_t$df, digits = 2)`)~ = `r format(retest_t$statistic, digits = 2)`, *p* `r format.p(retest_t$p, digits = 2)`; @fig-retest-errors)
 
 ```{r}
 #| label: tbl-retest-errors-models
