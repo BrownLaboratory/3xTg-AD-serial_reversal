@@ -45,9 +45,6 @@ library(here)
 library(janitor)
 library(rstatix)
 library(tidyverse)
-library(MuMIn)
-    # options(na.action = "na.fail")
-library(lme4)
 library(knitr)
     options(knitr.kable.NA = '')
 library(kableExtra)
@@ -199,10 +196,6 @@ The 3xTg-AD mice (`r format(age_table$age_mean[1], digits = 2)` ± `r format(age
 
 training_dat <- dat %>% 
     filter(op == 0)
-
-# training_t_test <- training_dat %>% 
-#     ungroup() %>% 
-#     t_test(errors ~ geno)
 
 training_ancova <- training_dat %>% 
     ungroup() %>% 
@@ -396,41 +389,6 @@ disc_dat %>%
 ```
 
 ```{r}
-#| label: tbl-disc-models
-#| tbl-cap: "AICc model table for discrimination."
-
-#### Tests -------------------------------------------------------
-
-# Discrimination
-
-# disc_fm <- lmer(errors ~ op * geno + (1|animal),
-#                 data = disc_dat,
-#                 REML = FALSE)
-# 
-# disc_model_table <- dredge(disc_fm)
-# 
-# disc_best_model <- get.models(disc_model_table,
-#                               subset = delta == 0)[[1]]
-# 
-# disc_null_model <- lmer(errors ~ (1|animal),
-#                         data = disc_dat,
-#                         REML = FALSE)
-# 
-# disc_aov <- anova(disc_best_model, disc_null_model) %>% tidy()
-# 
-# attr(disc_model_table$weight, 'model.weights') <- NULL
-# 
-# disc_model_table %>% 
-#     mutate(weight = round(weight, 2)) %>% 
-#     select(-`(Intercept)`) %>% 
-#     kable(digits = 2,
-#           row.names = FALSE,
-#           booktabs = TRUE,
-#           linesep = "")
-#     # kable_styling(latex_options = c("scale_down"))
-```
-
-```{r}
 disc_first_third_aov <- disc_dat %>% 
     filter(op_n < 7) %>% 
     ungroup() %>% 
@@ -471,15 +429,7 @@ disc_last_third_aov <- disc_dat %>%
 The sequence of odour pairs was divided into thirds, and ANCOVAs, with age as the covariate, examining the errors on the discrimination trials were run on each third (@fig-disc).
 Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
 
-<!-- In the first third of trials there was a significant effect of odour pair (*F*~(`r format(disc_first_third_aov$DFn[2], digits = 2)`,`r format(disc_first_third_aov$DFd[2], digits = 2)`)~ = `r format(disc_first_third_aov$F[2], digits = 2)`, *p* `r format.p(disc_first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(disc_first_third_aov$ges[2], digits = 2)`),  -->
-<!-- but no effect of genotype (*F*~(`r format(disc_first_third_aov$DFn[1], digits = 2)`,`r format(disc_first_third_aov$DFd[1], digits = 2)`)~ = `r format(disc_first_third_aov$F[1], digits = 2)`, *p* `r format.p(disc_first_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(disc_first_third_aov$ges[1], digits = 2)`),  -->
-<!-- nor an interaction (*F*~(`r format(disc_first_third_aov$DFn[3], digits = 2)`,`r format(disc_first_third_aov$DFd[3], digits = 2)`)~ = `r format(disc_first_third_aov$F[3], digits = 2)`, *p* `r format.p(disc_first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(disc_first_third_aov$ges[3], digits = 2)`). -->
-
 There were no significant effects in the first (1 - 6), second (7 - 12) or last thirds (13 - 18) of trials (*p*'s >= `r format(min(c(disc_first_third_aov$p, disc_second_third_aov$p, disc_last_third_aov$p), digits = 2))`).
-
-<!-- In the last third of trials there was a significant effect of odour pair (*F*~(`r format(disc_last_third_aov$DFn[2], digits = 2)`,`r format(disc_last_third_aov$DFd[2], digits = 2)`)~ = `r format(disc_last_third_aov$F[2], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[2], digits = 2)`),  -->
-<!-- but no effect of genotype (*F*~(`r format(disc_last_third_aov$DFn[1], digits = 2)`,`r format(disc_last_third_aov$DFd[1], digits = 2)`)~ = `r format(disc_last_third_aov$F[1], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[1], digits = 2)`),  -->
-<!-- nor an interaction (*F*~(`r format(disc_last_third_aov$DFn[3], digits = 2)`,`r format(disc_last_third_aov$DFd[3], digits = 2)`)~ = `r format(disc_last_third_aov$F[3], digits = 2)`, *p* `r format.p(disc_last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(disc_last_third_aov$ges[3], digits = 2)`). -->
 
 ## Near errorless learning
 
@@ -536,52 +486,6 @@ disc_errorless_chi_op <- tabyl(disc_errorless_dat, op_n, errorless) %>%
 
 disc_errorless_chi_geno <- tabyl(disc_errorless_dat, geno, errorless) %>%
     chisq.test()
-```
-
-```{r}
-#| label: tbl-disc-errorless-models
-#| tbl-cap: "AICc model table for near errorless learning during discrimination."
-
-# disc_errorless_mf <- glmer(errorless ~ geno + (1|animal),
-#                            data = disc_errorless_dat,
-#                            family = "binomial")
-# 
-# disc_errorless_model_table <- dredge(disc_errorless_mf)
-# 
-# disc_errorless_best_model <- get.models(disc_errorless_model_table,
-#                                         subset = delta == 0)[[1]]
-# 
-# disc_errorless_null_model <- glmer(errorless ~ 1 + (1|animal),
-#                                    data = disc_errorless_dat,
-#                                    family = "binomial")
-# 
-# disc_errorless_aov <- anova(disc_errorless_best_model, 
-#                             disc_errorless_null_model) %>% 
-#     tidy()
-# 
-# attr(disc_errorless_model_table$weight, 'model.weights') <- NULL
-# 
-# disc_errorless_model_table %>% 
-#     mutate(weight = round(weight, 2)) %>% 
-#     select(-`(Intercept)`) %>% 
-#     kable(digits = 2,
-#           row.names = FALSE,
-#           booktabs = TRUE,
-#           linesep = "")
-
-```
-
-```{r}
-# disc_second_half <- disc_dat %>% 
-#     filter(op >= 10) %>% 
-#     group_by(geno) %>% 
-#     summarise(errors_mean = mean(errors),
-#               errors_sd = sd(errors))
-# 
-# disc_second_half_t_test <- disc_dat %>%
-#     filter(op >= 10) %>%
-#     ungroup() %>%
-#     t_test(errors ~ geno)
 ```
 
 There were `r disc_1_error %>% nrow()` times where mice made a single error on the initial discrimination of the odour pair, and `r disc_0_error %>% nrow()` times where a mouse made zero errors (@fig-disc-errorless). 
@@ -647,39 +551,6 @@ rev_dat %>%
          y = "Errors")
 ```
 
-
-```{r}
-#| label: tbl-rev-models
-#| tbl-cap: "AICc model table for reversal."
-
-# Reversal
-# rev_fm <- lmer(errors ~ op * geno + (1|animal),
-#                data = rev_dat,
-#                REML = FALSE)
-# 
-# rev_model_table <- dredge(rev_fm)
-# 
-# rev_best_model <- get.models(rev_model_table,
-#                              subset = delta == 0)[[1]]
-# 
-# rev_null_model <- lmer(errors ~ (1|animal),
-#                        data = rev_dat,
-#                        REML = FALSE)
-# 
-# rev_aov <- anova(rev_best_model, rev_null_model) %>% tidy()
-# 
-# attr(rev_model_table$weight, 'model.weights') <- NULL
-# 
-# rev_model_table %>% 
-#     mutate(weight = round(weight, 2)) %>% 
-#     select(-`(Intercept)`) %>% 
-#     kable(digits = 2,
-#           row.names = FALSE,
-#           booktabs = TRUE,
-#           linesep = "") 
-    # kable_styling(latex_options = c("scale_down"))
-```
-
 ```{r}
 
 rev_first_third_aov <- rev_dat %>% 
@@ -737,8 +608,6 @@ In the first third (1 - 6) of odour pairs there were significant effects of geno
 with the B6129 mice (`r format(rev_first_third_summary$errors_mean[2], digits = 2)` ± `r format(rev_first_third_summary$errors_sd[2], digits = 2)`) making more errors than the 3xTg-AD mice (`r format(rev_first_third_summary$errors_mean[1], digits = 2)` ± `r format(rev_first_third_summary$errors_sd[1], digits = 2)`).
 but no significant effect of odour pair (*F*~(`r format(rev_first_third_aov$DFn[3], digits = 2)`,`r format(rev_first_third_aov$DFd[3], digits = 2)`)~ = `r format(rev_first_third_aov$F[3], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[3], digits = 2)`), 
 nor an interaction (*F*~(`r format(rev_first_third_aov$DFn[5], digits = 2)`,`r format(rev_first_third_aov$DFd[5], digits = 2)`)~ = `r format(rev_first_third_aov$F[5], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[5], digits = 2)`).
-
-<!-- Post hoc Tukey HSD tests found that there were significant genotype differences on odour pairs one (adjusted *p* `r format.p(rev_first_third_ph$p.adj[1])`), two (adjusted *p* `r format.p(rev_first_third_ph$p.adj[2])`), and six (adjusted *p* `r format.p(rev_first_third_ph$p.adj[6])`). -->
 
 There were no significant effects in the second (7 - 12) of odour pairs (*p*'s >= `r format(min(rev_last_third_aov$p), digits = 2)`).
 
@@ -804,53 +673,6 @@ rev_errorless_chi_geno <- tabyl(rev_errorless_dat, geno, errorless) %>%
     chisq.test()
 ```
 
-
-```{r}
-#| label: tbl-rev-errorless-models
-#| tbl-cap: "AICc model table for near errorless learning during reversal"
-
-# rev_errorless_mf <- glmer(errorless ~ geno + (1|animal),
-#                            data = rev_errorless_dat,
-#                            family = "binomial")
-# 
-# rev_errorless_model_table <- dredge(rev_errorless_mf)
-# 
-# rev_errorless_best_model <- get.models(rev_errorless_model_table,
-#                                         subset = delta == 0)[[1]]
-# 
-# rev_errorless_null_model <- glmer(errorless ~ 1 + (1|animal),
-#                                    data = rev_errorless_dat,
-#                                    family = "binomial")
-# 
-# rev_errorless_aov <- anova(rev_errorless_best_model, 
-#                             rev_errorless_null_model) %>% 
-#     tidy()
-# 
-# attr(rev_errorless_model_table$weight, 'model.weights') <- NULL
-# 
-# rev_errorless_model_table %>% 
-#     mutate(weight = round(weight, 2)) %>% 
-#     select(-`(Intercept)`) %>% 
-#     kable(digits = 2,
-#           row.names = FALSE,
-#           booktabs = TRUE,
-#           linesep = "")
-
-```
-
-```{r}
-# rev_second_half <- rev_dat %>% 
-#     filter(op >= 10) %>% 
-#     group_by(geno) %>% 
-#     summarise(errors_mean = mean(errors),
-#               errors_sd = sd(errors))
-# 
-# rev_second_half_t_test <- rev_dat %>%
-#     filter(op >= 10) %>%
-#     ungroup() %>%
-#     t_test(errors ~ geno)
-```
-
 There were `r rev_1_error %>% nrow()` instances of mice making a single error on the reversal of the odour pair, and `r rev_0_error %>% nrow()` instances of a mouse making zero errors (@fig-rev-errorless). 
 With `r rev_errorless_table %>% length()` mice passing at least one reversal with just one or zero errors.
 One mouse, a `r rev_best_geno`, had one or fewer errors on the reversal of `r rev_errorless_table %>% max()` odour pairs.
@@ -905,32 +727,6 @@ total_errors_ancova <- total_errors_dat %>%
     anova_test(dv = total_errors,
                between = geno,
                covariate = days)
-
-# total_errors_fm <- lm(total_errors ~ geno,
-#                       data = total_errors_dat)
-# 
-# total_errors_model_table <- dredge(total_errors_fm)
-# 
-# total_errors_best_model <- get.models(total_errors_model_table,
-#                                       delta == 0)[[1]]
-# 
-# total_errors_null_model <- lm(total_errors ~ 1,
-#                               data = total_errors_dat)
-# 
-# total_errors_aov <- anova(total_errors_null_model,
-#                           total_errors_best_model) %>% 
-#     tidy()
-# 
-# attr(total_errors_model_table$weight, 'model.weights') <- NULL
-# 
-# total_errors_model_table %>% 
-#     mutate(weight = round(weight, 2)) %>% 
-#     select(-`(Intercept)`) %>% 
-#     kable(digits = 2,
-#           row.names = FALSE,
-#           booktabs = TRUE,
-#           linesep = "")
-
 ```
 
 An ANCOVA, with age as the covariate, was used to assess the total errors made during the discrimination and reversal trials.
@@ -1017,32 +813,6 @@ retest_ancova <- retest_dat %>%
 
 An ANCOVA, with age as the covariate, was used to assess the number of errors made during the retest. 
 There was no significant effect of genotype (*F*~(`r format(retest_ancova$DFn[2], digits = 2)`,`r format(retest_ancova$DFd[2], digits = 2)`)~ = `r format(retest_ancova$F[2], digits = 2)`, *p* `r format.p(retest_ancova$p[2], digits = 2)`, $\eta^2_G$ = `r format(retest_ancova$ges[2], digits = 2)`; @fig-retest-errors)
-
-```{r}
-#| label: tbl-retest-errors-models
-#| tbl-cap: "AICc model table for retest errors."
-#### Retest ---------------------------------------------------------
-
-# retest_mf <- lm(errors ~ geno,
-#                 data = retest_dat)
-# 
-# retest_model_table <- dredge(retest_mf)
-# 
-# attr(retest_model_table$weight, 'model.weights') <- NULL
-# 
-# retest_model_table %>% 
-#     mutate(weight = round(weight, 2)) %>% 
-#     select(-`(Intercept)`) %>% 
-#     kable(digits = 2,
-#           row.names = FALSE,
-#           booktabs = TRUE,
-#           linesep = "")
-
-```
-
-<!-- The number of errors made during the retest was assessed with linear maodels.  -->
-<!-- The null model best explained the data for the number of errors made during the retest (@tbl-retest-errors-models),  -->
-<!-- indicating no significant effects of genotype nor sex (@fig-retest-errors). -->
 
 ```{r}
 retest_vs_18_t_test <- retest_dat %>% 
