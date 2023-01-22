@@ -16,7 +16,6 @@ affiliations:
   - id: dal
     name: Dalhousie University
     deparment: Psychology and Neuroscience, 
-
 execute:
   echo: false
   warning: false
@@ -37,10 +36,13 @@ format:
                 \fancyfoot[C]{\thepage}
         toc: false
         number-sections: true
-        bibliography: bibliography.json
-        csl: apa.csl
 template-partials:
   - title.tex
+bibliography: references.bib
+csl: apa.csl
+editor: 
+  markdown: 
+    wrap: sentence
 ---
 
 ```{r}
@@ -197,22 +199,24 @@ age_table <- geno %>%
               age_sd = sd(days))
 
 ```
-Male and female 3xTg-AD mice (B6;129-Tg(APPSwe,tauP301L)1Lfa Psen1^tm1Mpm^/Mmjax; JAX stock #004807) and B6129SF2/J mice (JAX stock #101045) were tested in this study. 
+
+Male and female 3xTg-AD mice (B6;129-Tg(APPSwe,tauP301L)1Lfa Psen1^tm1Mpm^/Mmjax; JAX stock #004807) and B6129SF2/J mice (JAX stock #101045) were tested in this study.
 The mice were bred at Dalhousie University from parents purchased from the Jackson Laboratory in Bar Harbour, Maine.
-The 3×Tg-AD mice have three mutations, the Swedish (K670N/ M671L) mutation to amyloid precursor protein (APP), a mutation to presenilin-1 (PS1) (M146V), and a tau mutation (P301L) [@oddoTripleTransgenicModelAlzheimer2003]. 
-Pups were weaned at 21 days of age and housed in same sex groups of 2-4 in transparent polyethylene cages (35 × 12 × 12 cm) with ad libitum food (Purina Rodent Chow #5001) and tap water. 
-Housing cages contained pine chip bedding and a polyvinyl chloride tube (5 cm diameter, 8 cm long) for enrichment. 
-The housing room was on a 12:12 h reversed light/dark cycle. Mice were genotyped using polymerase chain reaction by Dr. Chris Sinal (Department of Pharmacology, Dalhousie University). 
-All test procedures were approved by the Dalhousie Committee on Animal Care (Protocol # 13-044).
+The 3×Tg-AD mice have three mutations, the Swedish (K670N/ M671L) mutation to amyloid precursor protein (APP), a mutation to presenilin-1 (PS1) (M146V), and a tau mutation (P301L) [@oddoTripleTransgenicModelAlzheimer2003].
+Pups were weaned at 21 days of age and housed in same sex groups of 2-4 in transparent polyethylene cages (35 × 12 × 12 cm) with ad libitum food (Purina Rodent Chow #5001) and tap water.
+Housing cages contained pine chip bedding and a polyvinyl chloride tube (5 cm diameter, 8 cm long) for enrichment.
+The housing room was on a 12:12 h reversed light/dark cycle.
+Mice were genotyped using polymerase chain reaction by Dr. Chris Sinal (Department of Pharmacology, Dalhousie University).
+All test procedures were approved by the Dalhousie Committee on Animal Care (Protocol \# 13-044).
 
 Due to the small number of male mice, sexes are pooled together in this analysis.
-There are `r dat %>% pull(animal) %>% unique() %>% length()` mice included in this study. 
+There are `r dat %>% pull(animal) %>% unique() %>% length()` mice included in this study.
 The 3xTg-AD mice (`r format(age_table$age_mean[1], digits = 2)` ± `r format(age_table$age_sd[1], digits = 2)` days) were significantly younger than the B6129 mice (`r format(age_table$age_mean[2], digits = 2)` ± `r format(age_table$age_sd[2], digits = 2)` days; *t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`; @tbl-subjects).
 
 ## Apparatus
 
-Two liquid dilution olfactometers (Knosys Olfactometers Inc.) previously described [@roddickOlfactoryDelayedMatching2014; @slotnickOlfactometryMice2005] were used. 
-Air was sent through a filter after which it was split into two pathways, one as clean air, and the other flowed through a manifold which controlled the air flow through saturation bottles and into a T-junction, where clean and odorized air flows converged. 
+Two liquid dilution olfactometers (Knosys Olfactometers Inc.) previously described [@roddickOlfactoryDelayedMatching2014; @slotnickOlfactometryMice2005] were used.
+Air was sent through a filter after which it was split into two pathways, one as clean air, and the other flowed through a manifold which controlled the air flow through saturation bottles and into a T-junction, where clean and odorized air flows converged.
 The odour sampling port contained an infrared beam to detect nose-pokes, a reinforcement tube delivering the reward, and a sensor that detected when the mice were licking the reinforcement tube.
 
 ## Odours
@@ -232,45 +236,45 @@ save_kable(odours_table,
            here("figures", "odours_table.pdf"))
 ```
 
-All odorants were diluted in heavy mineral oil. See @tbl-odours for a list of odours used. 
+All odorants were diluted in heavy mineral oil.
+See @tbl-odours for a list of odours used.
 For each mouse, the values of the odours, as either the rewarded (S+) odour or the unrewarded (S-) odour during each discrimination were randomly assigned.
 
 ## Water restriction
 
-Ten days prior to the start of testing mice were individually housed and placed on water restriction. 
-Mice were weighed daily and given measured amounts of mash (powdered food pellets mixed with water) to maintain their weight at approximately 85% of free feeding weight. 
+Ten days prior to the start of testing mice were individually housed and placed on water restriction.
+Mice were weighed daily and given measured amounts of mash (powdered food pellets mixed with water) to maintain their weight at approximately 85% of free feeding weight.
 They had *ad lib* access to food during water restriction.
 
 ## Behavioral testing
 
-All behavioral testing was done during the dark phase of the light/dark cycle. 
-The mice were initially trained for 20 trials to lick the reinforcement tube to receive a water reward and were rewarded for simply licking the reinforcement tube. 
-The inter-trial interval increased from 0.1 s to 12 s over the 20 trials. 
-During the next stage of training, a rewarded stimulus (S+) odour was introduced and the mice were required to keep their head in the odour sampling port while the final valve diverted the odour into the port. 
-The amount of time the mice were required to keep their head in the port increased from 0.1 s to 1.1 s over 120 trials. 
-This stage of training was completed when the mice performed 20 trials with the final valve on for 1.1 s. 
+All behavioral testing was done during the dark phase of the light/dark cycle.
+The mice were initially trained for 20 trials to lick the reinforcement tube to receive a water reward and were rewarded for simply licking the reinforcement tube.
+The inter-trial interval increased from 0.1 s to 12 s over the 20 trials.
+During the next stage of training, a rewarded stimulus (S+) odour was introduced and the mice were required to keep their head in the odour sampling port while the final valve diverted the odour into the port.
+The amount of time the mice were required to keep their head in the port increased from 0.1 s to 1.1 s over 120 trials.
+This stage of training was completed when the mice performed 20 trials with the final valve on for 1.1 s.
 
-Mice were then introduced to the unrewarded (S-) odour. 
-During this stage of training the mice were presented with a stimulus odour when they inserted their head into the odour sampling port, either a rewarded stimulus (S+), or an unrewarded stimulus (S-). 
-When the mice were presented with the S+, they were rewarded for licking the reinforcement tube. 
-Trials were initiated by the mice poking their nose into the odour sampling port, with a minimum inter-trial interval of 4 s. 
-They were first presented with 20 trials of the S+ odour. 
-If they did not respond to at least 85% of these S+ presentations they were placed back on the initial training. 
-If they did respond to at least 85% of the S+ presentations, they were then presented with blocks of 20 trials consisting of 10 S+ trials and 10 S- trials. 
+Mice were then introduced to the unrewarded (S-) odour.
+During this stage of training the mice were presented with a stimulus odour when they inserted their head into the odour sampling port, either a rewarded stimulus (S+), or an unrewarded stimulus (S-).
+When the mice were presented with the S+, they were rewarded for licking the reinforcement tube.
+Trials were initiated by the mice poking their nose into the odour sampling port, with a minimum inter-trial interval of 4 s.
+They were first presented with 20 trials of the S+ odour.
+If they did not respond to at least 85% of these S+ presentations they were placed back on the initial training.
+If they did respond to at least 85% of the S+ presentations, they were then presented with blocks of 20 trials consisting of 10 S+ trials and 10 S- trials.
 This continued until the mice achieved 85% correct responses on a block.
 
-Mice were then moved to the testing stage. 
-Mice were presented with a two odour discrimination problem using odour pair 1. 
-They were given blocks of 20 trials, 10 S+ trials and 10 S- trials, until they achieved 85% correct. 
-They were then presented with a reversal problem using odour pair 1. 
-The values of the odours were reversed, such that the S+ became the S- and the S- became the S+. 
-They were given blocks of 20 trials, 10 S+ trials and 10 S- trials, until they achieved 85% correct. 
+Mice were then moved to the testing stage.
+Mice were presented with a two odour discrimination problem using odour pair 1.
+They were given blocks of 20 trials, 10 S+ trials and 10 S- trials, until they achieved 85% correct.
+They were then presented with a reversal problem using odour pair 1.
+The values of the odours were reversed, such that the S+ became the S- and the S- became the S+.
+They were given blocks of 20 trials, 10 S+ trials and 10 S- trials, until they achieved 85% correct.
 This pattern of presenting the discrimination followed by the reversal was repeated with each odour pair.
 
 ## Statistical analysis
 
-R version 4.2.2 [@rcoreteamLanguageEnvironmentStatistical2022]  was used for all analysis, using the “tidyverse” [@wickhamWelcomeTidyverse2019]  and “rstatix” [@kassambaraRstatixPipeFriendlyFramework2022] packages.
-
+R version 4.2.2 [@rcoreteamLanguageEnvironmentStatistical2022] was used for all analysis, using the "tidyverse" [@wickhamWelcomeTidyverse2019] and "rstatix" [@kassambaraRstatixPipeFriendlyFramework2022] packages.
 
 # Results
 
@@ -315,7 +319,6 @@ ggsave(here("figures", "training_plot.pdf"),
 
 An ANCOVA with age as a covariate was used to compare the number of errors made during training.
 The B6129 mice (`r format(training_summary$errors_mean[2], digits = 2)` ± `r format(training_summary$errors_sd[2], digits = 2)`) made more errors than the 3xTg-AD mice (`r format(training_summary$errors_mean[2], digits = 2)` ± `r format(training_summary$errors_sd[2], digits = 2)`; *F*~(`r format(training_ancova$DFn[2], digits = 2)`,`r format(training_ancova$DFd[2], digits = 2)`)~ = `r format(training_ancova$F[2], digits = 2)`, *p* `r format.p(training_ancova$p[2], digits = 2)`, $\eta^2_G$ = `r format(training_ancova$ges[2], digits = 2)`, @fig-training-errors).
-
 
 ## Difference scores
 
@@ -440,18 +443,12 @@ last_third_aov <- overall_diffs %>%
 The sequence of odour pairs was divided into thirds, and ANCOVAs, with age as the covariate, examining the differences between the errors on the discrimination trials and the reversal trials were run on each third.
 Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
 
-In the first third of odour pairs (1 - 6), there were significant effects of genotype (*F*~(`r format(first_third_aov$DFn[2], digits = 2)`,`r format(first_third_aov$DFd[2], digits = 2)`)~ = `r format(first_third_aov$F[2], digits = 2)`, *p* `r format.p(first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[2], digits = 2)`), 
-with the B6129 mice (`r format(overall_diffs_summary$diff_score_mean[2], diggits = 2)` ± `r format(overall_diffs_summary$diff_score_sd[2], diggits = 2)`) having greater differences scores than the 3xTg-AD mice (`r format(overall_diffs_summary$diff_score_mean[1], diggits = 2)` ± `r format(overall_diffs_summary$diff_score_sd[1], diggits = 2)`). 
-There was no significant effect of odour pair (*F*~(`r format(first_third_aov$DFn[3], digits = 2)`,`r format(first_third_aov$DFd[3], digits = 2)`)~ = `r format(first_third_aov$F[3], digits = 2)`, *p* `r format.p(first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[3], digits = 2)`; @fig-overall),
-nor a significant interaction (*F*~(`r format(first_third_aov$DFn[5], digits = 2)`,`r format(first_third_aov$DFd[5], digits = 2)`)~ = `r format(first_third_aov$F[5], digits = 2)`, *p* `r format.p(first_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[5], digits = 2)`).
+In the first third of odour pairs (1 - 6), there were significant effects of genotype (*F*~(`r format(first_third_aov$DFn[2], digits = 2)`,`r format(first_third_aov$DFd[2], digits = 2)`)~ = `r format(first_third_aov$F[2], digits = 2)`, *p* `r format.p(first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[2], digits = 2)`), with the B6129 mice (`r format(overall_diffs_summary$diff_score_mean[2], diggits = 2)` ± `r format(overall_diffs_summary$diff_score_sd[2], diggits = 2)`) having greater differences scores than the 3xTg-AD mice (`r format(overall_diffs_summary$diff_score_mean[1], diggits = 2)` ± `r format(overall_diffs_summary$diff_score_sd[1], diggits = 2)`).
+There was no significant effect of odour pair (*F*~(`r format(first_third_aov$DFn[3], digits = 2)`,`r format(first_third_aov$DFd[3], digits = 2)`)~ = `r format(first_third_aov$F[3], digits = 2)`, *p* `r format.p(first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[3], digits = 2)`; @fig-overall), nor a significant interaction (*F*~(`r format(first_third_aov$DFn[5], digits = 2)`,`r format(first_third_aov$DFd[5], digits = 2)`)~ = `r format(first_third_aov$F[5], digits = 2)`, *p* `r format.p(first_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(first_third_aov$ges[5], digits = 2)`).
 
-On the second third of odour pairs (7 - 12) there were no significant effects (*p*'s >= `r format(min(second_third_aov$p), digits = 2)`).
+On the second third of odour pairs (7 - 12) there were no significant effects (*p*'s \>= `r format(min(second_third_aov$p), digits = 2)`).
 
-On the last third of odour pairs (13 - 18) there was a significant interaction between age and odour pair (*F*~(`r format(last_third_aov$DFn[4], digits = 2)`,`r format(last_third_aov$DFd[4], digits = 2)`)~ = `r format(last_third_aov$F[4], digits = 2)`, *p* `r format.p(last_third_aov$p[4], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[4], digits = 2)`), 
-but no significant effects of genotype (*F*~(`r format(last_third_aov$DFn[2], digits = 2)`,`r format(last_third_aov$DFd[2], digits = 2)`)~ = `r format(last_third_aov$F[2], digits = 2)`, *p* `r format.p(last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[2], digits = 2)`), 
-odour pair (*F*~(`r format(last_third_aov$DFn[3], digits = 2)`,`r format(last_third_aov$DFd[3], digits = 2)`)~ = `r format(last_third_aov$F[3], digits = 2)`, *p* `r format.p(last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[3], digits = 2)`), 
-nor an interaction between genotype and odour pair (*F*~(`r format(last_third_aov$DFn[5], digits = 2)`,`r format(last_third_aov$DFd[5], digits = 2)`)~ = `r format(last_third_aov$F[5], digits = 2)`, *p* `r format.p(last_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[5], digits = 2)`).
-
+On the last third of odour pairs (13 - 18) there was a significant interaction between age and odour pair (*F*~(`r format(last_third_aov$DFn[4], digits = 2)`,`r format(last_third_aov$DFd[4], digits = 2)`)~ = `r format(last_third_aov$F[4], digits = 2)`, *p* `r format.p(last_third_aov$p[4], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[4], digits = 2)`), but no significant effects of genotype (*F*~(`r format(last_third_aov$DFn[2], digits = 2)`,`r format(last_third_aov$DFd[2], digits = 2)`)~ = `r format(last_third_aov$F[2], digits = 2)`, *p* `r format.p(last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[2], digits = 2)`), odour pair (*F*~(`r format(last_third_aov$DFn[3], digits = 2)`,`r format(last_third_aov$DFd[3], digits = 2)`)~ = `r format(last_third_aov$F[3], digits = 2)`, *p* `r format.p(last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[3], digits = 2)`), nor an interaction between genotype and odour pair (*F*~(`r format(last_third_aov$DFn[5], digits = 2)`,`r format(last_third_aov$DFd[5], digits = 2)`)~ = `r format(last_third_aov$F[5], digits = 2)`, *p* `r format.p(last_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(last_third_aov$ges[5], digits = 2)`).
 
 ## Discrimination
 
@@ -527,7 +524,7 @@ disc_last_third_aov <- disc_dat %>%
 The sequence of odour pairs was divided into thirds, and ANCOVAs, with age as the covariate, examining the errors on the discrimination trials were run on each third (@fig-disc).
 Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
 
-There were no significant effects in the first (1 - 6), second (7 - 12) or last thirds (13 - 18) of trials (*p*'s >= `r format(min(c(disc_first_third_aov$p, disc_second_third_aov$p, disc_last_third_aov$p), digits = 2))`).
+There were no significant effects in the first (1 - 6), second (7 - 12) or last thirds (13 - 18) of trials (*p*'s \>= `r format(min(c(disc_first_third_aov$p, disc_second_third_aov$p, disc_last_third_aov$p), digits = 2))`).
 
 ### Near errorless learning
 
@@ -590,13 +587,12 @@ disc_errorless_chi_geno <- tabyl(disc_errorless_dat, geno, errorless) %>%
     chisq.test()
 ```
 
-There were `r disc_1_error %>% nrow()` times where mice made a single error on the initial discrimination of the odour pair, and `r disc_0_error %>% nrow()` times where a mouse made zero errors (@fig-disc-errorless). 
+There were `r disc_1_error %>% nrow()` times where mice made a single error on the initial discrimination of the odour pair, and `r disc_0_error %>% nrow()` times where a mouse made zero errors (@fig-disc-errorless).
 With `r disc_errorless_table %>% length()` different mice passing at least one discrimination with just one or zero errors.
 One mouse, a `r disc_best_geno`, had one or fewer errors on the initial discrimination of `r disc_errorless_table %>% max()` odour pairs.
 
-Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorless learning. 
-The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(disc_errorless_chi_op$parameter, digits = 2)`~ = `r format(disc_errorless_chi_op$statistic, digits = 2)`, *p* `r format.p(disc_errorless_chi_op$p.value)`),
-with the majority of errorless discriminations occuring on odour pairs 8 - 18 as the number of errorless odour pairs increased from `r disc_error %>% filter(op_n < 7) %>% nrow()` to `r disc_error %>% filter(op_n >= 7, op_n < 13) %>% nrow()` to `r disc_error %>% filter(op_n >= 13) %>% nrow()` in each third of the odour pairs.
+Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorless learning.
+The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(disc_errorless_chi_op$parameter, digits = 2)`~ = `r format(disc_errorless_chi_op$statistic, digits = 2)`, *p* `r format.p(disc_errorless_chi_op$p.value)`), with the majority of errorless discriminations occuring on odour pairs 8 - 18 as the number of errorless odour pairs increased from `r disc_error %>% filter(op_n < 7) %>% nrow()` to `r disc_error %>% filter(op_n >= 7, op_n < 13) %>% nrow()` to `r disc_error %>% filter(op_n >= 13) %>% nrow()` in each third of the odour pairs.
 The $\chi^2$ on the effect of genotype was not significant ($\chi^2$~`r format(disc_errorless_chi_geno$parameter, digits = 2)`~ = `r format(disc_errorless_chi_geno$statistic, digits = 2)`, *p* `r format.p(disc_errorless_chi_geno$p.value)`).
 
 ### Age effects
@@ -627,11 +623,10 @@ ggsave(here("figures", "disc_age.pdf"),
        height = 4)
 ```
 
-Pearson's correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr). 
-The correlations were not significant for either the B6129 (*r* = `r format(disc_corr_test$cor[2], digits = 2)`, *p* `r format.p(disc_corr_test$p[2])`), 
-nor the 3xTg-AD (*r* = `r format(disc_corr_test$cor[1], digits = 2)`, *p* `r format.p(disc_corr_test$p[1])`) mice, 
-thus there was no significant change in errors with age.
-{{< pagebreak >}}
+Pearson's correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype (@fig-disc-corr).
+The correlations were not significant for either the B6129 (*r* = `r format(disc_corr_test$cor[2], digits = 2)`, *p* `r format.p(disc_corr_test$p[2])`), nor the 3xTg-AD (*r* = `r format(disc_corr_test$cor[1], digits = 2)`, *p* `r format.p(disc_corr_test$p[1])`) mice, thus there was no significant change in errors with age.
+{{< pagebreak >}} 
+
 ## Reversal
 
 ```{r}
@@ -716,17 +711,12 @@ rev_last_third_ph <- rev_dat %>%
 The sequence of odour pairs was divided into thirds, and ANCOVAs, with age as the covariate, examining the errors on the reversal trials were run on each third (@fig-rev).
 Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
 
-In the first third (1 - 6) of odour pairs there were significant effects of genotype (*F*~(`r format(rev_first_third_aov$DFn[2], digits = 2)`,`r format(rev_first_third_aov$DFd[2], digits = 2)`)~ = `r format(rev_first_third_aov$F[2], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[2], digits = 2)`), 
-with the B6129 mice (`r format(rev_first_third_summary$errors_mean[2], digits = 2)` ± `r format(rev_first_third_summary$errors_sd[2], digits = 2)`) making more errors than the 3xTg-AD mice (`r format(rev_first_third_summary$errors_mean[1], digits = 2)` ± `r format(rev_first_third_summary$errors_sd[1], digits = 2)`).
-but no significant effect of odour pair (*F*~(`r format(rev_first_third_aov$DFn[3], digits = 2)`,`r format(rev_first_third_aov$DFd[3], digits = 2)`)~ = `r format(rev_first_third_aov$F[3], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[3], digits = 2)`), 
-nor an interaction (*F*~(`r format(rev_first_third_aov$DFn[5], digits = 2)`,`r format(rev_first_third_aov$DFd[5], digits = 2)`)~ = `r format(rev_first_third_aov$F[5], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[5], digits = 2)`).
+In the first third (1 - 6) of odour pairs there were significant effects of genotype (*F*~(`r format(rev_first_third_aov$DFn[2], digits = 2)`,`r format(rev_first_third_aov$DFd[2], digits = 2)`)~ = `r format(rev_first_third_aov$F[2], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[2], digits = 2)`), with the B6129 mice (`r format(rev_first_third_summary$errors_mean[2], digits = 2)` ± `r format(rev_first_third_summary$errors_sd[2], digits = 2)`) making more errors than the 3xTg-AD mice (`r format(rev_first_third_summary$errors_mean[1], digits = 2)` ± `r format(rev_first_third_summary$errors_sd[1], digits = 2)`).
+but no significant effect of odour pair (*F*~(`r format(rev_first_third_aov$DFn[3], digits = 2)`,`r format(rev_first_third_aov$DFd[3], digits = 2)`)~ = `r format(rev_first_third_aov$F[3], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[3], digits = 2)`), nor an interaction (*F*~(`r format(rev_first_third_aov$DFn[5], digits = 2)`,`r format(rev_first_third_aov$DFd[5], digits = 2)`)~ = `r format(rev_first_third_aov$F[5], digits = 2)`, *p* `r format.p(rev_first_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(rev_first_third_aov$ges[5], digits = 2)`).
 
-There were no significant effects in the second third (7 - 12) of odour pairs (*p*'s >= `r format(min(rev_last_third_aov$p), digits = 2)`).
+There were no significant effects in the second third (7 - 12) of odour pairs (*p*'s \>= `r format(min(rev_last_third_aov$p), digits = 2)`).
 
-In the last third (13 - 18) of odour pairs there was a significant interaction between age and odour pair (*F*~(`r format(rev_last_third_aov$DFn[4], digits = 2)`,`r format(rev_last_third_aov$DFd[4], digits = 2)`)~ = `r format(rev_last_third_aov$F[4], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[4], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[4], digits = 2)`), 
-but no main effects of genotype (*F*~(`r format(rev_last_third_aov$DFn[2], digits = 2)`,`r format(rev_last_third_aov$DFd[2], digits = 2)`)~ = `r format(rev_last_third_aov$F[2], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[2], digits = 2)`),
-odour pair (*F*~(`r format(rev_last_third_aov$DFn[3], digits = 2)`,`r format(rev_last_third_aov$DFd[3], digits = 2)`)~ = `r format(rev_last_third_aov$F[3], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[3], digits = 2)`),
-nor an interaction between genotype and odour pair (*F*~(`r format(rev_last_third_aov$DFn[5], digits = 2)`,`r format(rev_last_third_aov$DFd[5], digits = 2)`)~ = `r format(rev_last_third_aov$F[5], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[5], digits = 2)`).
+In the last third (13 - 18) of odour pairs there was a significant interaction between age and odour pair (*F*~(`r format(rev_last_third_aov$DFn[4], digits = 2)`,`r format(rev_last_third_aov$DFd[4], digits = 2)`)~ = `r format(rev_last_third_aov$F[4], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[4], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[4], digits = 2)`), but no main effects of genotype (*F*~(`r format(rev_last_third_aov$DFn[2], digits = 2)`,`r format(rev_last_third_aov$DFd[2], digits = 2)`)~ = `r format(rev_last_third_aov$F[2], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[2], digits = 2)`), odour pair (*F*~(`r format(rev_last_third_aov$DFn[3], digits = 2)`,`r format(rev_last_third_aov$DFd[3], digits = 2)`)~ = `r format(rev_last_third_aov$F[3], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[3], digits = 2)`), nor an interaction between genotype and odour pair (*F*~(`r format(rev_last_third_aov$DFn[5], digits = 2)`,`r format(rev_last_third_aov$DFd[5], digits = 2)`)~ = `r format(rev_last_third_aov$F[5], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[5], digits = 2)`).
 
 ### Near errorless learning
 
@@ -789,13 +779,12 @@ rev_errorless_chi_geno <- tabyl(rev_errorless_dat, geno, errorless) %>%
     chisq.test()
 ```
 
-There were `r rev_1_error %>% nrow()` instances of mice making a single error on the reversal of the odour pair, and `r rev_0_error %>% nrow()` instances of a mouse making zero errors (@fig-rev-errorless). 
+There were `r rev_1_error %>% nrow()` instances of mice making a single error on the reversal of the odour pair, and `r rev_0_error %>% nrow()` instances of a mouse making zero errors (@fig-rev-errorless).
 With `r rev_errorless_table %>% length()` mice passing at least one reversal with just one or zero errors.
 One mouse, a `r rev_best_geno`, had one or fewer errors on the reversal of `r rev_errorless_table %>% max()` odour pairs.
 
-Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorsless learning. 
-The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(rev_errorless_chi_op$parameter, digits = 2)`~ = `r format(rev_errorless_chi_op$statistic, digits = 2)`, *p* `r format.p(rev_errorless_chi_op$p.value)`), 
-with the majority of errorless discriminations occuring on odour pairs 8 - 18 as the number of errorless odour pairs increased from `r rev_error %>% filter(op_n < 7) %>% nrow()` to `r rev_error %>% filter(op_n >= 7, op_n < 13) %>% nrow()` to `r rev_error %>% filter(op_n >= 13) %>% nrow()` in each third of the odour pairs.
+Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorsless learning.
+The $\chi^2$ on the effect of odour pair was significant ($\chi^2$~`r format(rev_errorless_chi_op$parameter, digits = 2)`~ = `r format(rev_errorless_chi_op$statistic, digits = 2)`, *p* `r format.p(rev_errorless_chi_op$p.value)`), with the majority of errorless discriminations occuring on odour pairs 8 - 18 as the number of errorless odour pairs increased from `r rev_error %>% filter(op_n < 7) %>% nrow()` to `r rev_error %>% filter(op_n >= 7, op_n < 13) %>% nrow()` to `r rev_error %>% filter(op_n >= 13) %>% nrow()` in each third of the odour pairs.
 The $\chi^2$ on the effect of genotype was also significant ($\chi^2$~`r format(rev_errorless_chi_geno$parameter, digits = 2)`~ = `r format(rev_errorless_chi_geno$statistic, digits = 2)`, *p* `r format.p(rev_errorless_chi_geno$p.value)`), with the 3xTg-AD mice having more errorless reversals than the B6129 mice.
 
 ### Age effects
@@ -826,10 +815,9 @@ ggsave(here("figures", "rev_age.pdf"),
        height = 4)
 ```
 
-Pearson's correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype. 
-The correlations were not significant for either the B6129 (*r* = `r format(rev_corr_test$cor[2], digits = 2)`, *p* `r format.p(rev_corr_test$p[2])`), 
-nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* `r format.p(rev_corr_test$p[1])`) mice (@fig-rev-corr).
-{{< pagebreak >}}
+Pearson's correlations were used to compare the number of errors made on odour pair one to the age of the mice for each genotype.
+The correlations were not significant for either the B6129 (*r* = `r format(rev_corr_test$cor[2], digits = 2)`, *p* `r format.p(rev_corr_test$p[2])`), nor the 3xTg-AD (*r* = `r format(rev_corr_test$cor[1], digits = 2)`, *p* `r format.p(rev_corr_test$p[1])`) mice (@fig-rev-corr).
+{{< pagebreak >}} 
 ## Total errors
 
 ```{r}
@@ -901,10 +889,9 @@ ggsave(here("figures", "total_errors_age.pdf"),
        height = 4)
 ```
 
-Pearson correlations were used to compare the total number of errors made per mouse to the age of the mice for each genotype (@fig-total-errors-corr). 
-The correlations were not significant for either the B6129 (*r* = `r format(total_errors_corr_test$cor[2], digits = 2)`, *p* `r format.p(total_errors_corr_test$p[2])`), 
-nor the 3xTg-AD (*r* = `r format(total_errors_corr_test$cor[1], digits = 2)`, *p* `r format.p(total_errors_corr_test$p[1])`) mice.
-{{< pagebreak >}}
+Pearson correlations were used to compare the total number of errors made per mouse to the age of the mice for each genotype (@fig-total-errors-corr).
+The correlations were not significant for either the B6129 (*r* = `r format(total_errors_corr_test$cor[2], digits = 2)`, *p* `r format.p(total_errors_corr_test$p[2])`), nor the 3xTg-AD (*r* = `r format(total_errors_corr_test$cor[1], digits = 2)`, *p* `r format.p(total_errors_corr_test$p[1])`) mice.
+{{< pagebreak >}} 
 ## Retest
 
 ```{r}
@@ -927,10 +914,10 @@ retest_table <- retest_dat %>%
 ```
 
 Because some mice died, only `r retest_table$n[2]` `r retest_table$geno[2]` and `r retest_table$n[1]` `r retest_table$geno[1]` mice were given the retest.
-Because 3xTg-AD mice have a shorter lifespan than B6129 mice [@raeProblemGenotypeSex2015],
-fewer 3xTg-AD mice (`r retest_table$n[1]` / `r subj_n_table$n[1]`) survived to be given the retest than the B6129 mice (`r retest_table$n[2]` / `r subj_n_table$n[2]`).
+Because 3xTg-AD mice have a shorter lifespan than B6129 mice [@raeProblemGenotypeSex2015], fewer 3xTg-AD mice (`r retest_table$n[1]` / `r subj_n_table$n[1]`) survived to be given the retest than the B6129 mice (`r retest_table$n[2]` / `r subj_n_table$n[2]`).
 
-The retest occurred between `r format(min(retest_dat$retest_days), digits = 2)` and `r format(max(retest_dat$retest_days), digits = 2)` days after the final reversal. There was no difference between the days until the retest for the B6129 (`r format(retest_summary$days_mean[2], digits = 2)` ± `r format(retest_summary$days_sd[2], digits = 2)`) and 3xTg-AD (`r format(retest_summary$days_mean[1], digits = 2)` ± `r format(retest_summary$days_sd[1], digits = 2)`; *t*~`r format(retest_date_t_test$df, digits = 2)`~ = `r format(retest_date_t_test$statistic, digits = 2)`, *p* `r format.p(retest_date_t_test$p)`).
+The retest occurred between `r format(min(retest_dat$retest_days), digits = 2)` and `r format(max(retest_dat$retest_days), digits = 2)` days after the final reversal.
+There was no difference between the days until the retest for the B6129 (`r format(retest_summary$days_mean[2], digits = 2)` ± `r format(retest_summary$days_sd[2], digits = 2)`) and 3xTg-AD (`r format(retest_summary$days_mean[1], digits = 2)` ± `r format(retest_summary$days_sd[1], digits = 2)`; *t*~`r format(retest_date_t_test$df, digits = 2)`~ = `r format(retest_date_t_test$statistic, digits = 2)`, *p* `r format.p(retest_date_t_test$p)`).
 
 ```{r}
 retest_ancova <- retest_dat %>% 
@@ -940,7 +927,7 @@ retest_ancova <- retest_dat %>%
                covariate = days)
 ```
 
-An ANCOVA, with age as the covariate, was used to assess the number of errors made during the retest. 
+An ANCOVA, with age as the covariate, was used to assess the number of errors made during the retest.
 There was no significant effect of genotype (*F*~(`r format(retest_ancova$DFn[2], digits = 2)`,`r format(retest_ancova$DFd[2], digits = 2)`)~ = `r format(retest_ancova$F[2], digits = 2)`, *p* `r format.p(retest_ancova$p[2], digits = 2)`, $\eta^2_G$ = `r format(retest_ancova$ges[2], digits = 2)`; @fig-retest-errors)
 
 ```{r}
@@ -969,7 +956,7 @@ retest_vs_18_summary <- retest_dat %>%
               errors_sd = sd(errors))
 ```
 
-A paired t-test was used to compare the number of errors made during the retest to the numbers of errors made on the final odour discrimination. 
+A paired t-test was used to compare the number of errors made during the retest to the numbers of errors made on the final odour discrimination.
 The mean number of errors made during the retest (`r format(retest_vs_18_summary$errors_mean[1], digits = 2)` ± `r format(retest_vs_18_summary$errors_sd[1], digits = 2)`) was significantly higher than the errors made on the final odour discrimination (`r format(retest_vs_18_summary$errors_mean[2], digits = 2)` ± `r format(retest_vs_18_summary$errors_sd[2], digits = 2)`; *t*~`r format(retest_vs_18_t_test$df, digits = 2)`~ = `r format(retest_vs_18_t_test$statistic, digits = 2)`, *p* `r format.p(retest_vs_18_t_test$p)`).
 
 ```{r}
@@ -1020,9 +1007,8 @@ ggsave(here("figures", "retest_age.pdf"),
        height = 4)
 ```
 
-Pearson correlations were used to compare the number of errors made on the retest to the age of the mice for each genotype (@fig-retest-corr). 
-The correlations was not significant for the B6129 (*r* = `r format(retest_corr_test$cor[2], digits = 2)`, *p* `r format.p(retest_corr_test$p[2])`), 
-but was for the 3xTg-AD (*r* = `r format(retest_corr_test$cor[1], digits = 2)`, *p* `r format.p(retest_corr_test$p[1])`) mice.
+Pearson correlations were used to compare the number of errors made on the retest to the age of the mice for each genotype (@fig-retest-corr).
+The correlations was not significant for the B6129 (*r* = `r format(retest_corr_test$cor[2], digits = 2)`, *p* `r format.p(retest_corr_test$p[2])`), but was for the 3xTg-AD (*r* = `r format(retest_corr_test$cor[1], digits = 2)`, *p* `r format.p(retest_corr_test$p[1])`) mice.
 
 ### Time from last test effect
 
@@ -1064,12 +1050,11 @@ ggsave(here("figures", "retest_delay.pdf"),
        height = 4)
 ```
 
-Pearson correlations were used to compare the number of errors made on the retest to the days since the final reversal. 
-There was a significant, positive correlation for the B6129 mice (*r* = `r format(retest_days_corr_test$cor[2], digits = 2)`, *p* `r format.p(retest_days_corr_test$p[2])`), 
-but not for the 3xTg-AD mice (*r* = `r format(retest_days_corr_test$cor[1], digits = 2)`, *p* `r format.p(retest_days_corr_test$p[1])`; @fig-retest-delay-corr).
+Pearson correlations were used to compare the number of errors made on the retest to the days since the final reversal.
+There was a significant, positive correlation for the B6129 mice (*r* = `r format(retest_days_corr_test$cor[2], digits = 2)`, *p* `r format.p(retest_days_corr_test$p[2])`), but not for the 3xTg-AD mice (*r* = `r format(retest_days_corr_test$cor[1], digits = 2)`, *p* `r format.p(retest_days_corr_test$p[1])`; @fig-retest-delay-corr).
 
-An ANCOVA, with age as a covariate, was run examining the effects of genotype and time since last reversal on the errors made on the retest. 
+An ANCOVA, with age as a covariate, was run examining the effects of genotype and time since last reversal on the errors made on the retest.
 The time since last reversal was binned into 30, 60, and 90 day groups.
-There were no significant effects (*p*'s >= `r format(min(retest_delay_aov$p), digits = 2)`).
+There were no significant effects (*p*'s \>= `r format(min(retest_delay_aov$p), digits = 2)`).
 
 # References
