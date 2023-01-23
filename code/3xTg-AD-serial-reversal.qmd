@@ -36,13 +36,10 @@ format:
                 \fancyfoot[C]{\thepage}
         toc: false
         number-sections: true
-template-partials:
-  - title.tex
+        template-partials: 
+            - title.tex
 bibliography: references.bib
 csl: apa.csl
-editor: 
-  markdown: 
-    wrap: sentence
 ---
 
 ```{r}
@@ -200,24 +197,24 @@ age_table <- geno %>%
 
 ```
 
-Male and female 3xTg-AD mice (B6;129-Tg(APPSwe,tauP301L)1Lfa Psen1^tm1Mpm^/Mmjax; JAX stock #004807) and B6129SF2/J mice (JAX stock #101045) were tested in this study.
-The mice were bred at Dalhousie University from parents purchased from the Jackson Laboratory in Bar Harbour, Maine.
+Male and female 3xTg-AD mice (B6;129-Tg(APPSwe,tauP301L)1Lfa Psen1^tm1Mpm^/Mmjax; JAX stock #004807) and B6129SF2/J mice (JAX stock #101045) were bred at Dalhousie University from parents purchased from the Jackson Laboratory in Bar Harbour, Maine.
 The 3×Tg-AD mice have three mutations, the Swedish (K670N/ M671L) mutation to amyloid precursor protein (APP), a mutation to presenilin-1 (PS1) (M146V), and a tau mutation (P301L) [@oddoTripleTransgenicModelAlzheimer2003].
 Pups were weaned at 21 days of age and housed in same sex groups of 2-4 in transparent polyethylene cages (35 × 12 × 12 cm) with ad libitum food (Purina Rodent Chow #5001) and tap water.
 Housing cages contained pine chip bedding and a polyvinyl chloride tube (5 cm diameter, 8 cm long) for enrichment.
-The housing room was on a 12:12 h reversed light/dark cycle.
-Mice were genotyped using polymerase chain reaction by Dr. Chris Sinal (Department of Pharmacology, Dalhousie University).
+The housing room was on a 12:12 h reversed light/dark cycle with lights off at 0930h.
+Mice were genotyped using polymerase chain reaction by Dr. Chris Sinal (Department of Pharmacology, Dalhousie University) from ear punches taken at the time of weaning for individual identification..
 All test procedures were approved by the Dalhousie Committee on Animal Care (Protocol \# 13-044).
 
-Due to the small number of male mice, sexes are pooled together in this analysis.
+Due to the small number of male mice, sexes are pooled together in this analysis (@tbl-subjects).
 There are `r dat %>% pull(animal) %>% unique() %>% length()` mice included in this study.
-The 3xTg-AD mice (`r format(age_table$age_mean[1], digits = 2)` ± `r format(age_table$age_sd[1], digits = 2)` days) were significantly younger than the B6129 mice (`r format(age_table$age_mean[2], digits = 2)` ± `r format(age_table$age_sd[2], digits = 2)` days; *t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`; @tbl-subjects).
+The 3xTg-AD mice (`r format(age_table$age_mean[1], digits = 2)` ± `r format(age_table$age_sd[1], digits = 2)` days) were significantly younger than the B6129 mice (`r format(age_table$age_mean[2], digits = 2)` ± `r format(age_table$age_sd[2], digits = 2)` days; *t*~`r format(t_test_age$df, digits = 2)`~ = `r format(t_test_age$statistic, digits = 2)`, *p* `r format.p(t_test_age$p)`).
 
 ## Apparatus
 
 Two liquid dilution olfactometers (Knosys Olfactometers Inc.) previously described [@roddickOlfactoryDelayedMatching2014; @slotnickOlfactometryMice2005] were used.
-Air was sent through a filter after which it was split into two pathways, one as clean air, and the other flowed through a manifold which controlled the air flow through saturation bottles and into a T-junction, where clean and odorized air flows converged.
-The odour sampling port contained an infrared beam to detect nose-pokes, a reinforcement tube delivering the reward, and a sensor that detected when the mice were licking the reinforcement tube.
+Air was sent through a charcoal filter after which it was split into two pathways, one with clean air, and the other through a manifold which controlled the air flow through saturation bottles and into a T-junction, where clean and odorized air flows were mixed.
+A final valve was able to divert the air flow either to the exhaust, or to the odour sampling port which was open to the animal chamber.
+The odour sampling port contained an infrared beam to detect nose-pokes, a reinforcement tube delivering the water reward, and a sensor that detected when the mice were licking the reinforcement tube.
 
 ## Odours
 
@@ -236,45 +233,59 @@ save_kable(odours_table,
            here("figures", "odours_table.pdf"))
 ```
 
-All odorants were diluted in heavy mineral oil.
-See @tbl-odours for a list of odours used.
-For each mouse, the values of the odours, as either the rewarded (S+) odour or the unrewarded (S-) odour during each discrimination were randomly assigned.
+All odorants (@tbl-odours) were purchased from Sigma-Aldritch and diluted in heavy mineral oil.
+For each mouse, the rewarded (S+) and unrewarded (S-) odours were randomly assigned during each discrimination.
 
 ## Water restriction
 
-Ten days prior to the start of testing mice were individually housed and placed on water restriction.
+Ten days prior to the start of testing, mice were individually housed and placed on water restriction.
 Mice were weighed daily and given measured amounts of mash (powdered food pellets mixed with water) to maintain their weight at approximately 85% of free feeding weight.
 They had *ad lib* access to food during water restriction.
 
-## Behavioral testing
+## Behavioural testing
 
-All behavioral testing was done during the dark phase of the light/dark cycle.
-The mice were initially trained for 20 trials to lick the reinforcement tube to receive a water reward and were rewarded for simply licking the reinforcement tube.
+All behavioural testing was done during the dark phase of the light/dark cycle.
+
+### Response training
+
+The mice were initially trained for 20 trials to lick the reinforcement tube  and received a water reward for simply licking the tube.
 The inter-trial interval increased from 0.1 s to 12 s over the 20 trials.
 During the next stage of training, a rewarded stimulus (S+) odour was introduced and the mice were required to keep their head in the odour sampling port while the final valve diverted the odour into the port.
-The amount of time the mice were required to keep their head in the port increased from 0.1 s to 1.1 s over 120 trials.
+The length of time the mice were required to keep their head in the odour sampling port increased from 0.1 s to 1.1 s over 120 trials.
 This stage of training was completed when the mice performed 20 trials with the final valve on for 1.1 s.
+
+### Odour discrimination training
 
 Mice were then introduced to the unrewarded (S-) odour.
 During this stage of training the mice were presented with a stimulus odour when they inserted their head into the odour sampling port, either a rewarded stimulus (S+), or an unrewarded stimulus (S-).
-When the mice were presented with the S+, they were rewarded for licking the reinforcement tube.
+When the mice were presented with the S+, they received a water reward (XX $\mu$l) for licking the reinforcement tube.
 Trials were initiated by the mice poking their nose into the odour sampling port, with a minimum inter-trial interval of 4 s.
 They were first presented with 20 trials of the S+ odour.
 If they did not respond to at least 85% of these S+ presentations they were placed back on the initial training.
-If they did respond to at least 85% of the S+ presentations, they were then presented with blocks of 20 trials consisting of 10 S+ trials and 10 S- trials.
+If they did respond to at least 85% of the S+ presentations, they were then presented with blocks of 20 trials consisting of 10 S+ and 10 S- trials.
 This continued until the mice achieved 85% correct responses on a block.
 
-Mice were then moved to the testing stage.
-Mice were presented with a two odour discrimination problem using odour pair 1.
-They were given blocks of 20 trials, 10 S+ trials and 10 S- trials, until they achieved 85% correct.
-They were then presented with a reversal problem using odour pair 1.
-The values of the odours were reversed, such that the S+ became the S- and the S- became the S+.
-They were given blocks of 20 trials, 10 S+ trials and 10 S- trials, until they achieved 85% correct.
-This pattern of presenting the discrimination followed by the reversal was repeated with each odour pair.
+### Discrimination and reversal learning
+
+Mice were then moved to the testing stage, which consisted of a two odour discrimination problem using odour pair 1.
+They were given blocks of 20 trials, 10 S+ and 10 S-, until they achieved 85% correct.
+They were then presented with a reversal problem using odour pair 1 in which the S+ odour became the S- odour and vice-versa.
+They were given blocks of 20 trials (10 S+ and 10 S-) until they achieved 85% correct.
+This pattern of presenting a discrimination task followed by a reversal task was repeated with each of the 18 odour pairs.
+
+### Retest
+
+One, two, or three months after finishing the reversal of odour pair 18, mice were retested on that reversal.
+The mice were given blocks of 20 trials (10 S+ and 10 S-) until they achieved 85% correct.
 
 ## Statistical analysis
 
 R version 4.2.2 [@rcoreteamLanguageEnvironmentStatistical2022] was used for all analysis, using the "tidyverse" [@wickhamWelcomeTidyverse2019] and "rstatix" [@kassambaraRstatixPipeFriendlyFramework2022] packages.
+The number of errors made prior to reaching criterion was used as the measure of learning.
+Due to the significant difference in the ages of the B6129 and 3xTg-AD mice, ANCOVAs with age as a covariate were used to assess genotype differences.
+Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
+Pearson's $\chi^2$ tests with Yate's continuity corrections were run on the number of mice showing errorless learning, defined as making only zero or one errors on a discrimination task or reversal.
+To assess the effects of age, Pearson's correlations were run.
 
 # Results
 
