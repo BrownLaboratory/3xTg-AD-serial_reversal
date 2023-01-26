@@ -325,7 +325,7 @@ training_dat %>%
     geom_boxplot(outlier.shape = NA) +
     geom_dotplot(binaxis = "y", 
                stackdir = "center",
-               fill = NA) +
+               alpha = .5) +
     theme_classic() +
     theme(legend.position = "none") +
     labs(y = "Training errors",
@@ -340,6 +340,66 @@ An ANCOVA with age as a covariate was used to compare the number of errors made 
 The B6129 mice (`r format(training_summary$errors_mean[2], digits = 2)` ± `r format(training_summary$errors_sd[2], digits = 2)`) made more errors than the 3xTg-AD mice (`r format(training_summary$errors_mean[1], digits = 2)` ± `r format(training_summary$errors_sd[1], digits = 2)`; *F*~(`r format(training_ancova$DFn[2], digits = 2)`,`r format(training_ancova$DFd[2], digits = 2)`)~ = `r format(training_ancova$F[2], digits = 2)`, *p* `r format.p(training_ancova$p[2], digits = 2)`, $\eta^2_G$ = `r format(training_ancova$ges[2], digits = 2)`, @fig-training-errors).
 
 ## Discrimination trials
+
+```{r}
+#| label: fig-overall
+#| fig-cap: "Errors (±95% CI) made by the mice on the discrimination and reversals of each odour pair. The difference scores (reversal errors - discriminatino errors) are indicated by the lines on each pair."
+
+overall_dat <- dat %>% 
+    filter(retest == FALSE,
+           op_n > 0) %>% 
+    pivot_wider(id_cols = c(animal, op, op_n, geno, days),
+                names_from = rev,
+                values_from = errors) %>% 
+    select(animal,
+           op,
+           op_n,
+           geno,
+           days,
+           disc = `FALSE`,
+           rev = `TRUE`)
+    
+overall_dat %>% 
+    pivot_longer(c(disc, rev),
+                 names_to = "condition",
+                 values_to = "errors") %>% 
+    group_by(op_n, geno, condition) %>% 
+    mutate(x = case_when(
+        condition == "disc" ~ op_n,
+        condition == "rev" ~ op_n + .33),
+              y = errors) %>% 
+    ggplot(aes(x = x,
+               y = y,
+               shape = condition,
+               colour = geno)) +
+    stat_summary(fun.data = "mean_cl_boot") +
+    geom_segment(data = overall_dat %>%
+                     group_by(op, geno) %>%
+                     summarise(x = mean(op_n),
+                               y = mean(disc, na.rm = TRUE),
+                               xend = mean(op_n) + .33,
+                               yend = mean(rev, na.rm = TRUE),
+                               condition = "disc"),
+                 aes(x = x, y = y, 
+                     xend = xend, yend = yend), 
+                     colour = "black") +
+    facet_grid(rows = vars(geno)) +
+    theme_bw() +
+    scale_x_continuous(breaks = 1:18) +
+    scale_shape_manual(values = c(16, 1),
+                       labels = c("Discriminatinon trials", "Reversal trials")) +
+    theme(panel.grid = element_blank(),
+          legend.position = c(.8, .9),
+          legend.title = element_blank(),
+          legend.background = element_blank()) +
+    guides(shape = "legend", colour = "none") +
+    labs(x = "Odour pair",
+         y = "Errors")
+
+ggsave(here("figures", "difference_scores.pdf"),
+       width = 6,
+       height = 4)
+```
 
 ```{r}
 #| label: fig-disc
@@ -410,10 +470,10 @@ disc_last_third_aov <- disc_dat %>%
     get_anova_table()
 ```
 
-The sequence of odour pairs (@fig-disc) was divided into thirds, and ANCOVAs, with age as the covariate, were used to analyze the number of errors on the odour discrimination trials in each third.
+The sequence of odour pairs (@fig-overall) was divided into thirds, and ANCOVAs, with age as the covariate, were used to analyze the number of errors on the odour discrimination trials in each third.
 Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
 
-There were no significant effects of genotype, odour pair, nor interactions between genotype and odour pair, in the first (1 - 6), second (7 - 12) or last thirds (13 - 18) of trials (*p*'s \>= `r format(min(c(disc_first_third_aov$p, disc_second_third_aov$p, disc_last_third_aov$p), digits = 2))`).
+There were no significant effects of genotype, odour pair, nor interactions between genotype and odour pair, in the first (1 - 6), second (7 - 12) or last thirds (13 - 18) of trials (*p*'s \>= `r format(min(c(disc_first_third_aov$p, disc_second_third_aov$p, disc_last_third_aov$p), digits = 2))`; @fig-disc).
 
 ### Near errorless learning
 
@@ -733,66 +793,6 @@ The correlations were not significant for either the B6129 (*r* = `r format(rev_
 ## Difference scores
 
 ```{r}
-#| label: fig-overall
-#| fig-cap: "Errors (±95% CI) made by the mice on the discrimination and reversals of each odour pair. The difference scores (reversal errors - discriminatino errors) are indicated by the lines on each pair."
-
-overall_dat <- dat %>% 
-    filter(retest == FALSE,
-           op_n > 0) %>% 
-    pivot_wider(id_cols = c(animal, op, op_n, geno, days),
-                names_from = rev,
-                values_from = errors) %>% 
-    select(animal,
-           op,
-           op_n,
-           geno,
-           days,
-           disc = `FALSE`,
-           rev = `TRUE`)
-    
-overall_dat %>% 
-    pivot_longer(c(disc, rev),
-                 names_to = "condition",
-                 values_to = "errors") %>% 
-    group_by(op_n, geno, condition) %>% 
-    mutate(x = case_when(
-        condition == "disc" ~ op_n,
-        condition == "rev" ~ op_n + .33),
-              y = errors) %>% 
-    ggplot(aes(x = x,
-               y = y,
-               shape = condition,
-               colour = geno)) +
-    stat_summary(fun.data = "mean_cl_boot") +
-    geom_segment(data = overall_dat %>%
-                     group_by(op, geno) %>%
-                     summarise(x = mean(op_n),
-                               y = mean(disc, na.rm = TRUE),
-                               xend = mean(op_n) + .33,
-                               yend = mean(rev, na.rm = TRUE),
-                               condition = "disc"),
-                 aes(x = x, y = y, 
-                     xend = xend, yend = yend), 
-                     colour = "black") +
-    facet_grid(rows = vars(geno)) +
-    theme_bw() +
-    scale_x_continuous(breaks = 1:18) +
-    scale_shape_manual(values = c(16, 1),
-                       labels = c("Discriminatinon trials", "Reversal trials")) +
-    theme(panel.grid = element_blank(),
-          legend.position = c(.8, .9),
-          legend.title = element_blank(),
-          legend.background = element_blank()) +
-    guides(shape = "legend", colour = "none") +
-    labs(x = "Odour pair",
-         y = "Errors")
-
-ggsave(here("figures", "difference_scores.pdf"),
-       width = 6,
-       height = 4)
-```
-
-```{r}
 overall_diffs <- overall_dat %>% 
     mutate(diff_score = rev - disc,
            diff_pro = rev / disc)
@@ -897,7 +897,7 @@ total_errors_dat %>%
     geom_boxplot(outlier.shape = NA) +
     geom_dotplot(binaxis = "y", 
                stackdir = "center",
-               fill = NA) +
+               alpha = .5) +
     theme_classic() +
     theme(legend.position = "none") +
     labs(y = "Total errors",
@@ -912,7 +912,7 @@ ggsave(here("figures", "total_errors_plot.pdf"),
 
 ```{r}
 #| label: fig-total-errors-corr
-#| fig-cap: "Correlation between mouse age and total number of errors made across all 18 discrimination and reversal learning tests.."
+#| fig-cap: "Correlation between mouse age and total number of errors made across all 18 discrimination and reversal learning tests."
 
 total_errors_corr_test <- total_errors_dat %>% 
     group_by(geno) %>% 
