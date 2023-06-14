@@ -58,6 +58,11 @@ library(cowplot)
     
 source(here("code", "format_p_values.R"))
 
+#### Set plot colours --------------------------------------------------
+
+col_3x <- "grey75"
+col_B6 <- "grey30"
+
 #### Read and wrangle data ---------------------------------------------
 
 # Genotypes data
@@ -287,6 +292,7 @@ Due to thos difference in the ages, ANCOVAs with age as a covariate were used to
 Greenhouse-Geisser corrections were applied when Mauchly's test for sphericity detected that within-subjects factors violated sphericity.
 Pearson's $\chi^2$ tests, with Yate's continuity corrections when examining the genotype effects, were run on the number of mice showing errorless learning, defined as making only zero or one errors on a discrimination task or reversal.
 To assess the effects of age, Pearson's correlations were run.
+Levene's tests were used to assess equality of variances between genotypes.
 
 # Results
 
@@ -322,7 +328,8 @@ training_dat %>%
     theme_classic() +
     theme(legend.position = "none") +
     labs(y = "Training errors",
-         x = "Genotype")
+         x = "Genotype") +
+    scale_fill_manual(values = c(col_3x, col_B6))
 
 ggsave(here("figures", "training_plot.pdf"),
        width = 6,
@@ -381,6 +388,7 @@ overall_dat %>%
     scale_x_continuous(breaks = 1:18) +
     scale_shape_manual(values = c(16, 1),
                        labels = c("Discriminatinon trials", "Reversal trials")) +
+    scale_colour_manual(values = c(col_3x, col_B6)) +
     theme(panel.grid = element_blank(),
           legend.position = c(.8, .9),
           legend.title = element_blank(),
@@ -493,6 +501,7 @@ disc_errorless_plot <- disc_errorless_dat %>%
     theme_classic() +
     scale_x_continuous(breaks  = 1:18) +
     scale_y_continuous(breaks = 0:7) +
+    scale_colour_manual(values = c(col_3x, col_B6)) +
     labs(x = "Odour pair",
          y = "Number of mice\nwith 0 or 1 errors",
          tag = "A")  +
@@ -541,6 +550,7 @@ rev_errorless_plot <- rev_errorless_dat %>%
          tag = "B")  +
     scale_x_continuous(breaks = 1:18) +
     scale_y_continuous(breaks = 0:5) +
+    scale_colour_manual(values = c(col_3x, col_B6)) +
     theme(legend.title = element_blank(),
           legend.position = c(.15, .9),
           legend.background = element_blank())
@@ -635,6 +645,17 @@ rev_last_third_aov <- rev_dat %>%
                covariate = days) %>% 
     get_anova_table()
 
+rev_last_third_aov_drop <- rev_dat %>% 
+    filter(op_n >= 13,
+           errors < 150) %>% 
+    ungroup() %>% 
+    anova_test(dv = errors,
+               between = geno,
+               wid = animal,
+               within = op,
+               covariate = days) %>% 
+    get_anova_table()
+    
 rev_last_third_ph <- rev_dat %>% 
     filter(op_n >= 13) %>% 
     group_by(op) %>%
@@ -650,6 +671,8 @@ There were no significant effects of genotype or odour pair in the second third 
 
 In the last third (13 - 18) of odour pairs there was a significant effect of age (*F*~(`r format(rev_last_third_aov$DFn[1], digits = 2)`,`r format(rev_last_third_aov$DFd[1], digits = 2)`)~ = `r format(rev_last_third_aov$F[1], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[1], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[1], digits = 2)`) and an interaction between age and odour pair (*F*~(`r format(rev_last_third_aov$DFn[4], digits = 2)`,`r format(rev_last_third_aov$DFd[4], digits = 2)`)~ = `r format(rev_last_third_aov$F[4], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[4], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[4], digits = 2)`), but no main effects of genotype (*F*~(`r format(rev_last_third_aov$DFn[2], digits = 2)`,`r format(rev_last_third_aov$DFd[2], digits = 2)`)~ = `r format(rev_last_third_aov$F[2], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[2], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[2], digits = 2)`), odour pair (*F*~(`r format(rev_last_third_aov$DFn[3], digits = 2)`,`r format(rev_last_third_aov$DFd[3], digits = 2)`)~ = `r format(rev_last_third_aov$F[3], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[3], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[3], digits = 2)`), nor an interaction between genotype and odour pair (*F*~(`r format(rev_last_third_aov$DFn[5], digits = 2)`,`r format(rev_last_third_aov$DFd[5], digits = 2)`)~ = `r format(rev_last_third_aov$F[5], digits = 2)`, *p* `r format.p(rev_last_third_aov$p[5], digits = 2)`, $\eta^2_G$ = `r format(rev_last_third_aov$ges[5], digits = 2)`).
 The significant effects involving age indicate that age does not significantly adjust the effects of genotype and odour pair on the ANCOVA.
+However, these effects were driven by one female B6129 mouse who made 231 errors on the reversal of odour pair 17.
+Removing that one mouse caused both effects to become non-significant (*p*s > `r format(min(rev_last_third_aov_drop$p, digits = 2))`).
 
 ### Near errorless learning
 
@@ -796,7 +819,8 @@ total_errors_dat %>%
     theme_classic() +
     theme(legend.position = "none") +
     labs(y = "Total errors",
-         x = "Genotype")
+         x = "Genotype") +
+    scale_fill_manual(values = c(col_3x, col_B6))
 
 ggsave(here("figures", "total_errors_plot.pdf"),
        width = 6,
@@ -906,6 +930,7 @@ retest_dat %>%
     theme(legend.title = element_blank(),
           legend.position = c(.15, .85)) +
     scale_x_discrete(labels = c("Reversal 18", "Retest")) +
+    scale_fill_manual(values = c(col_3x, col_B6)) +
     labs(y = "Errors",
          x = "")
 
@@ -968,6 +993,7 @@ disc_plot <- disc_dat %>%
     theme(legend.title = element_blank(),
           legend.position = c(.9, .9)) +
     scale_x_continuous(breaks = 1:18) +
+    scale_colour_manual(values = c(col_3x, col_B6)) +
     labs(x = "Odour pair",
          y = "Errors",
          tag = "A")
@@ -986,6 +1012,7 @@ rev_plot <- rev_dat %>%
     theme(legend.title = element_blank(),
           legend.position = c(.9, .9)) +
     scale_x_continuous(breaks = 1:18) +
+    scale_colour_manual(values = c(col_3x, col_B6)) +
     labs(x = "Odour pair",
          y = "Errors",
          tag = "B")
@@ -1019,7 +1046,8 @@ disc_age_plot <- disc_dat %>%
           legend.position = c(.85, .85)) +
     labs(x = "Age (days)",
          y = "Errors",
-         tag = "A")
+         tag = "A") +
+    scale_colour_manual(values = c(col_3x, col_B6))
 
 rev_age_plot <- rev_dat %>% 
     # filter(op == 1) %>%
@@ -1035,7 +1063,8 @@ rev_age_plot <- rev_dat %>%
           legend.position = "none") +
     labs(x = "Age (days)",
          y = "Errors",
-         tag = "B")
+         tag = "B") +
+    scale_colour_manual(values = c(col_3x, col_B6))
 
 total_errors_age_plot <- total_errors_dat %>% 
     ggplot(aes(x = days,
@@ -1048,7 +1077,8 @@ total_errors_age_plot <- total_errors_dat %>%
           legend.position = "none") +
     labs(x = "Age (days)",
          y = "Total errors",
-         tag = "C")
+         tag = "C") +
+    scale_colour_manual(values = c(col_3x, col_B6))
 
 plot_grid(disc_age_plot,
           rev_age_plot,
@@ -1076,7 +1106,8 @@ retest_errors_cor_plot <- retest_dat %>%
           legend.position = c(.85, .85)) +
     labs(x = "Age (days)",
          y = "Total errors",
-         tag = "A")
+         tag = "A") +
+    scale_colour_manual(values = c(col_3x, col_B6))
 
 retest_delay_cor_plot <- retest_dat %>% 
     ggplot(aes(x = retest_days,
@@ -1089,6 +1120,7 @@ retest_delay_cor_plot <- retest_dat %>%
           legend.position = "none") +
     scale_x_continuous(breaks = c(30, 60, 90)) +
     scale_y_continuous(breaks = seq(0, 120, by = 20)) +
+    scale_colour_manual(values = c(col_3x, col_B6)) +
     labs(x = "Days since last reversal",
          y = "Total errors",
          tag = "B")
@@ -1101,5 +1133,38 @@ ggsave(here("figures", "retest_corrs.pdf"),
        width = 6,
        height = 6)
 ```
+
+## Individual Differences
+
+```{r}
+
+levene_disc <- disc_dat %>% 
+    group_by(animal, geno) %>% 
+    summarise(total_errors = sum(errors)) %>% 
+    ungroup() %>% 
+    levene_test(total_errors ~ geno)
+
+levene_rev <- rev_dat %>% 
+    group_by(animal, geno) %>% 
+    summarise(total_errors = sum(errors)) %>% 
+    ungroup() %>% 
+    levene_test(total_errors ~ geno)
+
+levene_total_errors <- total_errors_dat %>% 
+    ungroup() %>% 
+    levene_test(total_errors ~ geno)
+
+total_errors_table <- total_errors_dat %>% 
+    group_by(geno) %>% 
+    summarise(min = min(total_errors),
+              max = max(total_errors)) %>% 
+    mutate(diff = max - min)
+```
+
+Levene's tests were run to determine if there were differences in variation between the two genotypes.
+The variances did not differ between genotypes on the total errors made during discrimination trials (*W*~(`r format(levene_disc$df1, digits = 2)`,`r format(levene_disc$df2, digits = 2)`)~ = `r format(levene_disc$statistic, digits = 2)`, *p* `r format.p(levene_disc$p)`),
+reversal trials (*W*~(`r format(levene_rev$df1, digits = 2)`,`r format(levene_rev$df2, digits = 2)`)~ = `r format(levene_rev$statistic, digits = 2)`, *p* `r format.p(levene_rev$p)`),
+nor on the total number of errors made (*W*~(`r format(levene_total_errors$df1, digits = 2)`,`r format(levene_total_errors$df2, digits = 2)`)~ = `r format(levene_total_errors$statistic, digits = 2)`, *p* `r format.p(levene_total_errors$p)`).
+The 3xTg-AD mice (`r total_errors_table$diff[total_errors_table$geno == "3xTg-AD"]`) and B6129 mice (`r total_errors_table$diff[total_errors_table$geno == "B6129"]`) had similar ranges between the best (3xTg-AD = `r total_errors_table$min[total_errors_table$geno == "3xTg-AD"]`; B6129 = `r total_errors_table$min[total_errors_table$geno == "B6129"]`) and worst (3xTg-AD = `r total_errors_table$max[total_errors_table$geno == "3xTg-AD"]`; B6129 = `r total_errors_table$max[total_errors_table$geno == "B6129"]`) performing mice in terms of total errors made.
 
 # References
