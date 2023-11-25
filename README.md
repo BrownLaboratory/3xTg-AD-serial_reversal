@@ -1,5 +1,10 @@
 # 3xTg-AD-serial_reversal
-Serial reversal in the 3xTg-AD mouse model of AD using the olfactometer
+Serial reversal in the 3xTg-AD mouse model of AD using the olfactometer.
+
+Published in:
+
+Roddick, K. M., Schellinck, H. M., & Brown, R. E. (2023). Serial reversal learning in an olfactory discrimination task in 3xTg-AD mice. Learning & Memory, 30(12), 310–319. https://doi.org/10.1101/lm.053840.123
+
 
 3xTg-AD-serial_reversal.Rproj:
     Project file for RStudio, records settings
